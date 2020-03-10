@@ -13,6 +13,7 @@ It relies on WalkTheWeb services to run. Currently it is a Work-In-Progress, whe
 
 To install:
 
-Copy to the /content/plugins/ folder then activate by logging into the Admin of your website 
+Copy to the /content/plugins/ folder then activate by logging into the Admin of your website.
+
 Admin Menu -> Plugins -> All Plugins
 And Click "Deactivate" to change it to "Activate".
