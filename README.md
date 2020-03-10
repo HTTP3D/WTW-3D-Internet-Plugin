@@ -16,4 +16,5 @@ To install:
 Copy to the /content/plugins/ folder then activate by logging into the Admin of your website.
 
 Admin Menu -> Plugins -> All Plugins
+
 And Click "Deactivate" to change it to "Activate".
