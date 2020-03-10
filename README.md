@@ -1,8 +1,11 @@
 # WTW-3D-Internet-Plugin
 
 pluginname = wtw-3dinternet
+
 title = WalkTheWeb 3D Internet
+
 description = 3D Internet connects your WalkTheWeb instance to the World with Multiplayer and Chat!
+
 author = Aaron Dishno Ed.D.
 
 This 3D Plugin extends the functionality of the base WalkTheWeb 3D Internet - 3D Website Hosting (3D CMS).
