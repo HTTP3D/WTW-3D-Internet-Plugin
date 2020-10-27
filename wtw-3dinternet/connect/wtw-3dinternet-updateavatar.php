@@ -7,7 +7,8 @@ try {
 	/* get values from querystring or session */
 	$zinstanceid = base64_decode($wtwconnect->getVal('i',''));
 	$zuseravatarid = base64_decode($wtwconnect->getVal('u',''));
-	$zavatarind = base64_decode($wtwconnect->getVal('ai',''));
+	$zglobaluseravatarid = base64_decode($wtwconnect->getVal('g',''));
+	$zavatarid = base64_decode($wtwconnect->getVal('ad',''));
 	$zuserid = base64_decode($wtwconnect->getVal('d',''));
 	$zobjectfolder = base64_decode($wtwconnect->getVal('o',''));
 	$zobjectfile = base64_decode($wtwconnect->getVal('f',''));
@@ -27,6 +28,9 @@ try {
 	$zturnspeed = base64_decode($wtwconnect->getVal('t','1'));
 	$zturnanimationspeed = base64_decode($wtwconnect->getVal('r','1'));
 	$zip = base64_decode($wtwconnect->getVal('a',''));
+	$zserverinstanceid = base64_decode($wtwconnect->getVal('si',''));
+	$zusertoken = $wtwconnect->getVal('at','');
+	$zrefresh = $wtwconnect->getVal('refresh','');
 
 	if (is_numeric($zenteranimation) == false) {
 		$zenteranimation = '1';
@@ -71,7 +75,7 @@ try {
 		$zresults = $wtwconnect->query("
 			select useravatarid 
 			from ".WTW_3DINTERNET_PREFIX."useravatars 
-			where instanceid='".$zinstanceid."' 
+			where useravatarid='".$zuseravatarid."' 
 				and userid='".$zuserid."' 
 				and (not userid='') 
 			order by updatedate desc limit 1;");
@@ -92,9 +96,10 @@ try {
 	if (!empty($zfounduseravatarid) && isset($zfounduseravatarid)) {
 		$wtwconnect->query("
 			update ".WTW_3DINTERNET_PREFIX."useravatars
-			set userid='".$zuserid."',
+			set  userid='".$zuserid."',
 				 userip='".$zip."',
-				 avatarind='".$zavatarind."',
+				 globaluseravatarid='".$zglobaluseravatarid."',
+				 avatarid='".$zavatarid."',
 				 objectfolder='".$zobjectfolder."',
 				 objectfile='".$zobjectfile."',
 				 domain='".$wtwconnect->domainname."',
@@ -127,9 +132,10 @@ try {
 			insert into ".WTW_3DINTERNET_PREFIX."useravatars
 				(instanceid,
 				 useravatarid,
+				 globaluseravatarid,
 				 userid,
 				 userip,
-				 avatarind,
+				 avatarid,
 				 objectfolder,
 				 objectfile,
 				 domain,
@@ -156,9 +162,10 @@ try {
 				values
 				('".$zinstanceid."',
 				 '".$zuseravatarid."',
+				 '".$zglobaluseravatarid."',
 				 '".$zuserid."',
 				 '".$zip."',
-				 '".$zavatarind."',
+				 '".$zavatarid."',
 				 '".$zobjectfolder."',
 				 '".$zobjectfile."',
 				 '".$wtwconnect->domainname."',
@@ -187,15 +194,23 @@ try {
 	$zavatardata = array();
 	$zavatarparts = array();
 	$zanimationdefs = array();
+	/* get latest user avatar settings */
 	if(ini_get('allow_url_fopen') ) {
-		$avatarurl = $wtwconnect->domainurl."/connect/avatars.php?i=".base64_encode($zinstanceid)."&d=".base64_encode($zuserid)."&p=".base64_encode($zip);
-		$zavatardata = file_get_contents($avatarurl);
+		if (!isset($zglobaluseravatarid) || empty($zglobaluseravatarid)) {
+			$avatarurl = $wtwconnect->domainurl."/connect/useravatar.php?a=".base64_encode($zuseravatarid)."&i=".base64_encode($zinstanceid)."&d=".base64_encode($zuserid)."&p=".base64_encode($zip);
+			$zavatardata = file_get_contents($avatarurl);
+		} else {
+			$avatarurl = "https://3dnet.walktheweb.com/connect/globalavatar.php?usertoken=".$zusertoken."&globaluseravatarid=".base64_encode($zglobaluseravatarid)."&serverinstanceid=".base64_encode($zserverinstanceid);
+			$zavatardata = file_get_contents($avatarurl);
+		}
 	}
 	$zavatardata = json_decode($zavatardata);
 	if (isset($zavatardata->avatar->avatarparts) && !empty($zavatardata->avatar->avatarparts)) {
+		/* get array of parts (meshes) for colors */
 		$zavatarparts = $zavatardata->avatar->avatarparts;
+		/* get array of animations */
 		$zanimationdefs = $zavatardata->avatar->avataranimationdefs;
-
+		/* cycle through the animations to update each animation in multiplyer table */
 		foreach($zanimationdefs as $zanimationdef) {
 			$zfounduseravataranimationid = "";
 			$zuseravataranimationid = $zanimationdef->useravataranimationid;
@@ -211,17 +226,17 @@ try {
 				$zsoundid = "";
 				$zsoundpath = "";
 				$zsoundmaxdistance = "";
+				/* check if user avatar animation exists in multiplayer table */
 				$zresults = $wtwconnect->query("
 					select useravataranimationid 
 					from ".WTW_3DINTERNET_PREFIX."useravataranimations 
-					where instanceid='".$zinstanceid."' 
-						and useravatarid='".$zuseravatarid."' 
+					where useravatarid='".$zuseravatarid."' 
 						and useravataranimationid='".$zuseravataranimationid."'
 					limit 1;");
 				foreach ($zresults as $zrow) {
 					$zfounduseravataranimationid = $zrow["useravataranimationid"];
 				}
-				
+				/* get avatar animation details */
 				$zresults = $wtwconnect->query("
 					select * 
 					from ".wtw_tableprefix."avataranimations 
@@ -242,11 +257,13 @@ try {
 				}				
 				
 				if (!empty($zfounduseravataranimationid) && isset($zfounduseravataranimationid)) {
+					/* if user animation was found, update it */
 					$wtwconnect->query("
 						update ".WTW_3DINTERNET_PREFIX."useravataranimations 
 						set avataranimationid = '".$zanimationdef->avataranimationid."',
+							globaluseravatarid = '".$zglobaluseravatarid."',
 							useravatarid='".$zuseravatarid."',
-							avataranimationname='".$zanimationdef->animationname."',
+							avataranimationevent='".$zanimationdef->animationevent."',
 							speedratio=".$zanimationdef->speedratio.",
 							walkspeed=".$zanimationdef->walkspeed.",
 							loadpriority=".$zloadpriority.",
@@ -270,13 +287,15 @@ try {
 						and useravataranimationid='".$zuseravataranimationid."'
 					");
 				} else {
+					/* if user animation was not found, add it */
 					$wtwconnect->query("
 						insert into ".WTW_3DINTERNET_PREFIX."useravataranimations 
 						   (useravataranimationid,
 							useravatarid,
+							globaluseravatarid,
 							instanceid,
 						    avataranimationid,
-							avataranimationname,
+							avataranimationevent,
 							speedratio,
 							walkspeed,
 							loadpriority,
@@ -297,9 +316,10 @@ try {
 						values	
 						   ('".$zuseravataranimationid."',
 						    '".$zuseravatarid."',
+							'".$zglobaluseravatarid."',
 							'".$zinstanceid."',
 							'".$zanimationdef->avataranimationid."',
-							'".$zanimationdef->animationname."',
+							'".$zanimationdef->animationevent."',
 							".$zanimationdef->speedratio.",
 							".$zanimationdef->walkspeed.",
 							".$zloadpriority.",
@@ -320,15 +340,16 @@ try {
 				} 
 			}
 		}
-		
+		/* cycle through the parts to update avatar colors in multiplayer table */
 		foreach($zavatarparts as $zavatarpart) {
 			$zfoundavatarpartid = "";
 			$zavatarpartid = $zavatarpart->avatarpartid;
 			if (!empty($zavatarpartid) && isset($zavatarpartid)) {
+				/* check of part exists in multiplayer table */
 				$zresults = $wtwconnect->query("
 					select avatarpartid 
 					from ".WTW_3DINTERNET_PREFIX."useravatarcolors 
-					where instanceid='".$zinstanceid."' 
+					where useravatarid='".$zuseravatarid."' 
 						and userid='".$wtwconnect->userid."' 
 						and avatarpartid='".$zavatarpartid."'
 					limit 1;");
@@ -336,32 +357,38 @@ try {
 					$zfoundavatarpartid = $zrow["avatarpartid"];
 				}
 				if (!empty($zfoundavatarpartid) && isset($zfoundavatarpartid)) {
+					/* if part found, update the colors */
 					$wtwconnect->query("
 						update ".WTW_3DINTERNET_PREFIX."useravatarcolors 
 						set avatarpart = '".$zavatarpart->avatarpart."',
-							emissivecolorr=".$zavatarpart->emissivecolorr.",
-							emissivecolorg=".$zavatarpart->emissivecolorg.",
-							emissivecolorb=".$zavatarpart->emissivecolorb.",
+							diffusecolor='".$zavatarpart->diffusecolor."',
+							specularcolor='".$zavatarpart->specularcolor."',
+							emissivecolor='".$zavatarpart->emissivecolor."',
+							ambientcolor='".$zavatarpart->ambientcolor."',
+							globaluseravatarid='".$zglobaluseravatarid."',
 							updatedate=now(),
 							updateuserid='',
 							deleteddate=null,
 							deleteduserid='',
 							deleted=0
-						where instanceid='".$zinstanceid."' 
+						where useravatarid='".$zuseravatarid."' 
 						and userid='".$wtwconnect->userid."' 
 						and avatarpartid='".$zavatarpartid."'
 					");
 				} else {
+					/* if part is not found, add the colors */
 					$wtwconnect->query("
 						insert into ".WTW_3DINTERNET_PREFIX."useravatarcolors 
 						   (avatarpartid,
 						    userid,
 							useravatarid,
+							globaluseravatarid,
 							instanceid,
 							avatarpart,
-							emissivecolorr,
-							emissivecolorg,
-							emissivecolorb,
+							diffusecolor,
+							specularcolor,
+							emissivecolor,
+							ambientcolor,
 							createdate,
 							createuserid,
 							updatedate,
@@ -370,11 +397,13 @@ try {
 						   ('".$zavatarpartid."',
 						    '".$wtwconnect->userid."',
 							'".$zuseravatarid."',
+							'".$zglobaluseravatarid."',
 							'".$zinstanceid."',
 							'".$zavatarpart->avatarpart."',
-							".$zavatarpart->emissivecolorr.",
-							".$zavatarpart->emissivecolorg.",
-							".$zavatarpart->emissivecolorb.",
+							'".$zavatarpart->diffusecolor."',
+							'".$zavatarpart->specularcolor."',
+							'".$zavatarpart->emissivecolor."',
+							'".$zavatarpart->ambientcolor."',
 							now(),
 							'".$wtwconnect->userid."',
 							now(),
@@ -383,12 +412,14 @@ try {
 			}
 		}
 	}
-	
-//	echo $wtwconnect->addConnectHeader($wtwconnect->domainname);
 
-	$zresponse = array('updated'=>date("Y-m-d H:i:s"));
+	echo $wtwconnect->addConnectHeader($wtwconnect->domainname);
 
-//	echo json_encode($zanimationdefs);	
+	$zresponse = array(
+		'refresh'=> $zrefresh
+	);
+
+	echo json_encode($zresponse);	
 } catch (Exception $e) {
 	$wtwconnect->serror("connect-wtw-3dinternet-updateavatar.php=".$e->getMessage());
 }

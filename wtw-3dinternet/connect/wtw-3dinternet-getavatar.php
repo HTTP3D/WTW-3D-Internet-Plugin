@@ -5,6 +5,7 @@ try {
 	$wtwconnect->trackPageView($wtwconnect->domainurl."/connect/wtw-3dinternet-getavatar.php");
 	
 	/* get values from querystring or session */
+	$zuseravatarid = base64_decode($wtwconnect->getVal('a',''));
 	$zinstanceid = base64_decode($wtwconnect->getVal('i',''));
 	$zuserid = base64_decode($wtwconnect->getVal('d',''));
 	$zcommunityid = base64_decode($wtwconnect->getVal('c',''));
@@ -29,7 +30,7 @@ try {
 	$zresults = $wtwconnect->query("
 		select useravatarid 
 		from ".WTW_3DINTERNET_PREFIX."useravatars 
-		where instanceid='".$zinstanceid."' 
+		where useravatarid='".$zuseravatarid."' 
 			and userid='".$zuserid."' 
 			and (not userid='') 
 			and deleted=0 
@@ -53,7 +54,8 @@ try {
 	$zavatar = array();
 	$zavatarparts = array();
 	$zuseravatarid = "";
-	$zavatarind = 0;
+	$zanonymous = '0';
+	$zavatarid = '';
 	$zobject = array();
 	$zdisplayname = "Anonymous";
 	$zprivacy = 0;
@@ -82,9 +84,12 @@ try {
 	
 		$i = 0;
 		foreach ($zresults as $zrow) {
+			if ($zrow["userid"] == '') {
+				$zanonymous = '1';
+			}
 			$zpersoninstanceid = $zrow["instanceid"];
 			$zuseravatarid = $zrow["useravatarid"];
-			$zavatarind = $zrow["avatarind"];
+			$zavatarid = $zrow["avatarid"];
 			$zdisplayname = $zrow["displayname"];
 			$zprivacy = $zrow["privacy"];
 			$zenteranimation = $zrow["enteranimation"];
@@ -118,9 +123,10 @@ try {
 				$zavatarparts[$j] = array(
 					'avatarpartid'=> $zrow2["avatarpartid"],
 					'avatarpart'=> $zrow2["avatarpart"],
-					'emissivecolorr'=> $zrow2["emissivecolorr"],
-					'emissivecolorg'=> $zrow2["emissivecolorg"],
-					'emissivecolorb'=> $zrow2["emissivecolorb"]
+					'diffusecolor'=> $zrow2["diffusecolor"],
+					'specularcolor'=> $zrow2["specularcolor"],
+					'emissivecolor'=> $zrow2["emissivecolor"],
+					'ambientcolor'=> $zrow2["ambientcolor"]
 				); 
 				$j += 1;
 			}
@@ -130,14 +136,14 @@ try {
 				from ".WTW_3DINTERNET_PREFIX."useravataranimations u 
 				where u.useravatarid='".$zfounduseravatarid."'
 					and u.deleted=0
-				order by u.loadpriority desc, u.avataranimationname, u.avataranimationid, u.useravataranimationid;");
+				order by u.loadpriority desc, u.avataranimationevent, u.avataranimationid, u.useravataranimationid;");
 			$j = 0;
 			foreach ($zresults2 as $zrow2) {
 				$zavataranimationdefs[$j] = array(
 					'animationind'=> $j,
 					'useravataranimationid'=> $zrow2["useravataranimationid"],
 					'avataranimationid'=> $zrow2["avataranimationid"],
-					'animationname'=> $zrow2["avataranimationname"],
+					'animationevent'=> $zrow2["avataranimationevent"],
 					'animationfriendlyname'=> $zrow2["animationfriendlyname"],
 					'loadpriority'=> $zrow2["loadpriority"],
 					'animationicon'=> $zrow2["animationicon"],
@@ -156,7 +162,7 @@ try {
 			$zavatardef = array(
 				'name'=> "person-".$zpersoninstanceid, 
 				'useravatarid'=> $zuseravatarid, 
-				'avatarind'=> $zavatarind,
+				'avatarid'=> $zavatarid,
 				'position'=>array(
 					'x'=>'0',
 					'y'=>'0',
@@ -169,6 +175,7 @@ try {
 				'object'=> $zobject,
 				'instanceid'=> $zpersoninstanceid,
 				'userid'=> $zuserid, 
+				'anonymous'=>$zanonymous,
 				'displayname'=> $zdisplayname, 
 				'opacity'=>'1',
 				'graphics'=> $zgraphics,

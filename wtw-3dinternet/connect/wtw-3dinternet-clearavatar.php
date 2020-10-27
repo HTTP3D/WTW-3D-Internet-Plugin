@@ -7,6 +7,7 @@ try {
 	$wtwconnect->trackPageView($wtwconnect->domainurl."/connect/wtw-3dinternet-clearavatar.php");
 	
 	/* get values from querystring or session */
+	$zuseravatarid = base64_decode($wtwconnect->getVal('a',''));
 	$zinstanceid = base64_decode($wtwconnect->getVal('i',''));
 	$zuserid = base64_decode($wtwconnect->getVal('d',''));
 	$zcommunityid = base64_decode($wtwconnect->getVal('c',''));
@@ -50,16 +51,17 @@ try {
 
 	if (!empty($zfounduseravatarid) && isset($zfounduseravatarid)) {
 		$wtwconnect->query("
-			update ".WTW_3DINTERNET_PREFIX."useravatars
-			set  deleteddate=now(),
-				 deleteduserid='".$wtwconnect->userid."',
-				 deleted=1
-			where useravatarid='".$zfounduseravatarid."';");
-		$wtwconnect->query("
-			delete from ".WTW_3DINTERNET_PREFIX."tracking
+			delete from ".WTW_3DINTERNET_PREFIX."useravatars
 			where useravatarid='".$zfounduseravatarid."'
-				and ((communityid='".$zcommunityid."' and not communityid='')
-				 or (buildingid='".$zbuildingid."' and not buildingid=''));");
+				and instanceid='".$zinstanceid."';");
+		$wtwconnect->query("
+			delete from ".WTW_3DINTERNET_PREFIX."useravatarcolors
+			where useravatarid='".$zfounduseravatarid."'
+				and instanceid='".$zinstanceid."';");
+		$wtwconnect->query("
+			delete from ".WTW_3DINTERNET_PREFIX."useravataranimations
+			where useravatarid='".$zfounduseravatarid."'
+				and instanceid='".$zinstanceid."';");
 	}
 
 	echo $wtwconnect->addConnectHeader($wtwconnect->domainname);

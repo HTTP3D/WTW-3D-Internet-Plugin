@@ -25,6 +25,6 @@ if (!defined('WTW_3DINTERNET_FILE')) {
 }
 
 if (!class_exists('wtw3dinternet')) {
-	require_once($wtwplugins->contentpath."\\plugins\\wtw-3dinternet\\functions\\class_plugin.php");
+	require_once($wtwplugins->contentpath."/plugins/wtw-3dinternet/functions/class_plugin.php");
 }
 ?>

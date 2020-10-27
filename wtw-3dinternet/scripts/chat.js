@@ -23,7 +23,7 @@ WTW_3DINTERNET.prototype.initChatSocket = function() {
 						'roomid':communityid + buildingid + thingid,
 						'instanceid':dGet('wtw_tinstanceid').value,
 						'userid':dGet('wtw_tuserid').value,
-						'username':dGet('wtw_tusername').value
+						'displayname':btoa(dGet('wtw_tdisplayname').value)
 					});
 				}
 			});
@@ -34,7 +34,7 @@ WTW_3DINTERNET.prototype.initChatSocket = function() {
 					'roomid':communityid + buildingid + thingid,
 					'instanceid':dGet('wtw_tinstanceid').value,
 					'userid':dGet('wtw_tuserid').value,
-					'username':dGet('wtw_tusername').value
+					'displayname':btoa(dGet('wtw_tdisplayname').value)
 				});
 			}
 
@@ -88,7 +88,7 @@ WTW_3DINTERNET.prototype.initChatSocket = function() {
 	} 
 }
 
-WTW_3DINTERNET.prototype.onUnload = function() {
+WTW_3DINTERNET.prototype.beforeUnloadChat = function() {
 	try {
 		var zchats = dGet('wtw_chatsendrequests').childNodes;
 		for (var i=0; i<zchats.length; i++) {
@@ -104,7 +104,7 @@ WTW_3DINTERNET.prototype.onUnload = function() {
 			}
 		}
 	} catch (ex) {
-		WTW.log("plugins:wtw-3dinternet:scripts-chat.js-onUnload=" + ex.message);
+		WTW.log("plugins:wtw-3dinternet:scripts-chat.js-beforeUnloadChat=" + ex.message);
 	} 
 }
 
@@ -163,7 +163,7 @@ WTW_3DINTERNET.prototype.startChat = function(zinstanceid) {
 			wtw3dinternet.sendMessage(zchatid, zinstanceid, 'start chat', '');
 		}
 	} catch (ex) {
-		WTW.log("plugins:wtw-3dinternet:scripts-chat.js-joinChat=" + ex.message);
+		WTW.log("plugins:wtw-3dinternet:scripts-chat.js-startChat=" + ex.message);
 	} 
 }
 
@@ -176,6 +176,7 @@ WTW_3DINTERNET.prototype.sendMessage = function(zchatid, ztoinstanceid, zaction,
 				'roomid':zroomid,
 				'chatid':zchatid,
 				'userid':dGet('wtw_tuserid').value,
+				'displayname':btoa(dGet('wtw_tdisplayname').value),
 				'frominstanceid':dGet('wtw_tinstanceid').value,
 				'toinstanceid':ztoinstanceid,
 				'text':ztext
@@ -303,6 +304,7 @@ WTW_3DINTERNET.prototype.closeMenus = function(zmenuid) {
 					}
 				}
 			}
+			dGet('wtw_startconnect').innerHTML = "";
 		}
 	} catch(ex) {
 		WTW.log("plugins:wtw-3dinternet:scripts-chat.js-closeMenus=" + ex.message);
@@ -318,7 +320,7 @@ WTW_3DINTERNET.prototype.chatCheckKey = function(obj, zchatid) {
 				wtw3dinternet.chat.emit('stop typing', {
 					'chatid':zchatid,
 					'userid':dGet('wtw_tuserid').value,
-					'username':dGet('wtw_tusername').value,
+					'displayname':btoa(dGet('wtw_tdisplayname').value),
 					'frominstanceid':dGet('wtw_tinstanceid').value,
 					'text':'stop typing'
 				});
@@ -331,7 +333,7 @@ WTW_3DINTERNET.prototype.chatCheckKey = function(obj, zchatid) {
 					wtw3dinternet.chat.emit('stop typing', {
 						'chatid':zchatid,
 						'userid':dGet('wtw_tuserid').value,
-						'username':dGet('wtw_tusername').value,
+						'displayname':btoa(dGet('wtw_tdisplayname').value),
 						'frominstanceid':dGet('wtw_tinstanceid').value,
 						'text':'stop typing'
 					});
@@ -339,7 +341,7 @@ WTW_3DINTERNET.prototype.chatCheckKey = function(obj, zchatid) {
 				wtw3dinternet.chat.emit('typing', {
 					'chatid':zchatid,
 					'userid':dGet('wtw_tuserid').value,
-					'username':dGet('wtw_tusername').value,
+					'displayname':btoa(dGet('wtw_tdisplayname').value),
 					'frominstanceid':dGet('wtw_tinstanceid').value,
 					'text':'typing'
 				});
