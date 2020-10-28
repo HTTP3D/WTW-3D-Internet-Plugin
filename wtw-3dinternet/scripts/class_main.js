@@ -45,6 +45,7 @@ WTW_3DINTERNET.prototype.avatarConnectMenu = function(ztoinstanceid) {
 			var zform = "<div id=\"wtw3dinternet_connect" + ztoinstanceid + "\" class='wtw3dinternet-chatboxshadow'>" + 
 					"<img class='wtw-closeright' onclick=\"wtw3dinternet.closeAvatarConnectMenu('" + ztoinstanceid + "');\" src='/content/system/images/menuclosegrey.png' alt='Close' title='Close' onmouseover=\"this.src='/content/system/images/menuclosehover.png';\" onmouseout=\"this.src='/content/system/images/menuclosegrey.png';\" />" + 
 					"<div class='wtw3dinternet-chatdisplayname'>" + zdisplayname + "</div><div style=\"clear:both;\"></div>" + 
+					"<div class='wtw3dinternet-chatuserinstance'>ID: " + ztoinstanceid + "</div><div style=\"clear:both;\"></div>" + 
 					"<div id=\"wtw_startchat" + ztoinstanceid + "\" class=\"wtw3dinternet-button\" onclick=\"wtw3dinternet.closeAvatarConnectMenu('" + ztoinstanceid + "');wtw3dinternet.startChat('" + ztoinstanceid + "');\">Private Chat</div>" +
 			
 				"</div>";

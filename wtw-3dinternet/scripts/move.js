@@ -65,6 +65,7 @@ WTW_3DINTERNET.prototype.initMoveSocket = function() {
 			wtw3dinternet.move.on('reconnect', function() {
 				wtw3dinternet.move.emit('add user', {
 					'serverinstanceid':dGet('wtw_serverinstanceid').value,
+					'serverip':dGet('wtw_serverip').value,
 					'roomid':communityid + buildingid + thingid,
 					'domainurl':wtw_domainurl,
 					'instanceid':dGet('wtw_tinstanceid').value,
@@ -173,6 +174,7 @@ WTW_3DINTERNET.prototype.initMoveSocket = function() {
 
 			wtw3dinternet.move.emit('add user', {
 				'serverinstanceid':dGet('wtw_serverinstanceid').value,
+				'serverip':dGet('wtw_serverip').value,
 				'roomid':communityid + buildingid + thingid,
 				'domainurl':wtw_domainurl,
 				'instanceid':dGet('wtw_tinstanceid').value,
@@ -193,7 +195,6 @@ WTW_3DINTERNET.prototype.initMoveSocket = function() {
 					wtw3dinternet.processSceneCommand(data);
 				}
 			});
-
 
 /*			/ * sample to be added in your code whereever you need to send a command * /
 			wtw3dinternet.move.emit('wtwadmin', {
@@ -240,6 +241,7 @@ WTW_3DINTERNET.prototype.moveAvatar = function(zavatar, zmoveevents) {
 				/* send multiplayer the position and animations */
 				let zmovedata = {
 					'serverinstanceid':dGet('wtw_serverinstanceid').value,
+					'serverip':dGet('wtw_serverip').value,
 					'roomid':communityid + buildingid + thingid,
 					'globaluseravatarid':dGet('wtw_tglobaluseravatarid').value,
 					'useravatarid':dGet('wtw_tuseravatarid').value,
@@ -519,6 +521,7 @@ WTW_3DINTERNET.prototype.clearMultiuser = function(zuseravatarid, zinstance, zus
 		if (wtw3dinternet.move != null) {
 			wtw3dinternet.move.emit('disconnect', {
 				'serverinstanceid':dGet('wtw_serverinstanceid').value,
+				'serverip':dGet('wtw_serverip').value,
 				'roomid':communityid + buildingid + thingid,
 				'domainurl':wtw_domainurl,
 				'siteurl':wtw_websiteurl,
@@ -692,6 +695,7 @@ WTW_3DINTERNET.prototype.sendCommand = function(ztoinstanceid, zaction, ztext) {
 			let zroomid = communityid + buildingid + thingid;
 			wtw3dinternet.move.emit(zaction, {
 				'serverinstanceid':dGet('wtw_serverinstanceid').value,
+				'serverip':dGet('wtw_serverip').value,
 				'roomid':zroomid,
 				'placeholder':WTW.placeHolder,
 				'globaluseravatarid':dGet('wtw_tglobaluseravatarid').value,

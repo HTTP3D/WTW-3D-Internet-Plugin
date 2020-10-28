@@ -16,6 +16,7 @@ WTW_3DINTERNET.prototype.initAdminSocket = function() {
 			
 			wtw3dinternet.admin.emit('connect server', {
 				'serverinstanceid':dGet('wtw_serverinstanceid').value,
+				'serverip':dGet('wtw_serverip').value,
 				'roomid':communityid + buildingid + thingid,
 				'domainurl':wtw_domainurl,
 				'siteurl':wtw_websiteurl,
@@ -27,6 +28,7 @@ WTW_3DINTERNET.prototype.initAdminSocket = function() {
 			wtw3dinternet.admin.on('reconnect server', function() {
 				wtw3dinternet.admin.emit('connect server', {
 					'serverinstanceid':dGet('wtw_serverinstanceid').value,
+					'serverip':dGet('wtw_serverip').value,
 					'roomid':communityid + buildingid + thingid,
 					'domainurl':wtw_domainurl,
 					'siteurl':wtw_websiteurl,
@@ -44,6 +46,7 @@ WTW_3DINTERNET.prototype.initAdminSocket = function() {
 			wtw3dinternet.checkConnection = window.setInterval(function() { 
 				wtw3dinternet.admin.emit('connect server check', {
 					'serverinstanceid':dGet('wtw_serverinstanceid').value,
+					'serverip':dGet('wtw_serverip').value,
 					'roomid':communityid + buildingid + thingid,
 					'domainurl':wtw_domainurl,
 					'siteurl':wtw_websiteurl,
@@ -92,6 +95,7 @@ WTW_3DINTERNET.prototype.initAdminSocket = function() {
 			wtw3dinternet.admin.on('reconnect', function() {
 				wtw3dinternet.admin.emit('add user', {
 					'serverinstanceid':dGet('wtw_serverinstanceid').value,
+					'serverip':dGet('wtw_serverip').value,
 					'roomid':communityid + buildingid + thingid,
 					'instanceid':dGet('wtw_tinstanceid').value,
 					'placeholder':WTW.placeHolder,

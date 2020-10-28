@@ -20,6 +20,7 @@ WTW_3DINTERNET.prototype.initChatSocket = function() {
 				if (wtw3dinternet.masterChat == '1') {
 					wtw3dinternet.chat.emit('add user', {
 						'serverinstanceid':dGet('wtw_serverinstanceid').value,
+						'serverip':dGet('wtw_serverip').value,
 						'roomid':communityid + buildingid + thingid,
 						'instanceid':dGet('wtw_tinstanceid').value,
 						'userid':dGet('wtw_tuserid').value,
@@ -31,6 +32,7 @@ WTW_3DINTERNET.prototype.initChatSocket = function() {
 			if (wtw3dinternet.masterChat == '1') {
 				wtw3dinternet.chat.emit('add user', {
 					'serverinstanceid':dGet('wtw_serverinstanceid').value,
+					'serverip':dGet('wtw_serverip').value,
 					'roomid':communityid + buildingid + thingid,
 					'instanceid':dGet('wtw_tinstanceid').value,
 					'userid':dGet('wtw_tuserid').value,
@@ -173,6 +175,7 @@ WTW_3DINTERNET.prototype.sendMessage = function(zchatid, ztoinstanceid, zaction,
 			let zroomid = communityid + buildingid + thingid;
 			wtw3dinternet.chat.emit(zaction, {
 				'serverinstanceid':dGet('wtw_serverinstanceid').value,
+				'serverip':dGet('wtw_serverip').value,
 				'roomid':zroomid,
 				'chatid':zchatid,
 				'userid':dGet('wtw_tuserid').value,
