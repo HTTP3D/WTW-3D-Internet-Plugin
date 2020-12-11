@@ -7,17 +7,17 @@ try {
 	$wtwconnect->trackPageView($wtwconnect->domainurl."/connect/wtw-3dinternet-clearavatar.php");
 	
 	/* get values from querystring or session */
-	$zuseravatarid = base64_decode($wtwconnect->getVal('a',''));
-	$zinstanceid = base64_decode($wtwconnect->getVal('i',''));
-	$zuserid = base64_decode($wtwconnect->getVal('d',''));
-	$zcommunityid = base64_decode($wtwconnect->getVal('c',''));
-	$zbuildingid = base64_decode($wtwconnect->getVal('b',''));
+	$zuseravatarid = $wtwconnect->decode64($wtwconnect->getVal('a',''));
+	$zinstanceid = $wtwconnect->decode64($wtwconnect->getVal('i',''));
+	$zuserid = $wtwconnect->decode64($wtwconnect->getVal('d',''));
+	$zcommunityid = $wtwconnect->decode64($wtwconnect->getVal('c',''));
+	$zbuildingid = $wtwconnect->decode64($wtwconnect->getVal('b',''));
 	
 	$zfounduseravatarid = "";
 	$zanonuseravatarid = "";
 	$zuseruseravatarid = "";
 	
-	/* select useravatarid data */
+	/* select anonymous useravatarid data by instance */
 	$zresults = $wtwconnect->query("
 		select useravatarid 
 		from ".WTW_3DINTERNET_PREFIX."useravatars 
@@ -28,6 +28,7 @@ try {
 	foreach ($zresults as $zrow) {
 		$zanonuseravatarid = $zrow["useravatarid"];
 	}
+	/* select useravatarid data by userid */
 	$zresults = $wtwconnect->query("
 		select useravatarid 
 		from ".WTW_3DINTERNET_PREFIX."useravatars 
@@ -50,6 +51,7 @@ try {
 	}
 
 	if (!empty($zfounduseravatarid) && isset($zfounduseravatarid)) {
+		/* clears temp tables when avatar leaves 3D Scene */
 		$wtwconnect->query("
 			delete from ".WTW_3DINTERNET_PREFIX."useravatars
 			where useravatarid='".$zfounduseravatarid."'

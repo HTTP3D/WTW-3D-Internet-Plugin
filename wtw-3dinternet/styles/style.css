@@ -1,3 +1,7 @@
+/* All code is Copyright 2013-2020 Aaron Scott Dishno Ed.D., HTTP3D Inc. - WalkTheWeb, and the contributors */
+/* "3D Browsing" is a USPTO Patented (Serial # 9,940,404) and Worldwide PCT Patented Technology by Aaron Scott Dishno Ed.D. and HTTP3D Inc. */
+/* Read the included GNU Ver 3.0 license file for details and additional release information. */
+
 .wtw3dinternet-controlpaneldiv {
 	border:2px solid #154360;
 	border-radius:15px;
@@ -85,6 +89,7 @@ input:checked + .wtw3dinternet-slider:before {
 	margin-left:10px;
 	padding-top:5px;
 	font-size:1.3em;
+	min-width:40%;
 }
 
 /* lable for disabled switch */
@@ -94,6 +99,7 @@ input:checked + .wtw3dinternet-slider:before {
 	margin-left:10px;
 	padding-top:5px;
 	font-size:1.3em;
+	min-width:40%;
 }
 
 .wtw3dinternet-chatbox {

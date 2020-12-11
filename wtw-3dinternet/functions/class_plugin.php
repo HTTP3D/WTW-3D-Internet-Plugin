@@ -1,4 +1,8 @@
 <?php
+/* All code is Copyright 2013-2020 Aaron Scott Dishno Ed.D., HTTP3D Inc. - WalkTheWeb, and the contributors */
+/* "3D Browsing" is a USPTO Patented (Serial # 9,940,404) and Worldwide PCT Patented Technology by Aaron Scott Dishno Ed.D. and HTTP3D Inc. */
+/* Read the included GNU Ver 3.0 license file for details and additional release information. */
+
 class wtw3dinternet {
 	protected static $_instance = null;
 	
@@ -21,9 +25,9 @@ class wtw3dinternet {
 	
 	public $version = "1.0.0";
 
-	public $dbversion = "1.0.3";
+	public $dbversion = "1.0.4";
 
-	public $versiondate = "2020-8-29";
+	public $versiondate = "2020-10-30";
 	
 	public function __call ($method, $arguments)  {
 		if (isset($this->$method)) {
@@ -97,7 +101,9 @@ class wtw3dinternet {
 
 			/* javascripts */
 			/* wtwplugins class -> addScript function (script id, '1' for admin only, script browse url) */
+			$wtwplugins->addScript('wtw-3dinternet-recordrtc', null, "/core/scripts/engine/recordrtc.js");
 			$wtwplugins->addScript('wtw-3dinternet-script', null, WTW_3DINTERNET_URL . "/scripts/class_main.js");
+			$wtwplugins->addScript('wtw-3dinternet-voicechat', null, WTW_3DINTERNET_URL . "/scripts/voicechat.js");
 			$wtwplugins->addScript('wtw-3dinternet-chat', null, WTW_3DINTERNET_URL . "/scripts/chat.js");
 			$wtwplugins->addScript('wtw-3dinternet-move', null, WTW_3DINTERNET_URL . "/scripts/move.js");
 			$wtwplugins->addScript('wtw-3dinternet-admin', null, WTW_3DINTERNET_URL . "/scripts/admin.js");
@@ -133,6 +139,7 @@ class wtw3dinternet {
 			$wtwplugins->addScriptFunction("onmyavatarselect", "wtw3dinternet.onMyAvatarSelect(zglobaluseravatarid, zuseravatarid, zavatarid);");
 			
 			$wtwplugins->addScriptFunction("closemenus", "wtw3dinternet.closeMenus(zmenuid);");
+			$wtwplugins->addScriptFunction("beforeunload", "wtw3dinternet.beforeUnloadVoiceChat();");
 			$wtwplugins->addScriptFunction("beforeunload", "wtw3dinternet.beforeUnloadChat();");
 			$wtwplugins->addScriptFunction("beforeunload", "wtw3dinternet.beforeUnloadMove();");
 			
@@ -145,14 +152,15 @@ class wtw3dinternet {
 		}
 	}	
 
-
 	public function _3dInternetChatForm() {
+		/* form container for chats */
 		$zformdata = "";
 		try {
 			$zformdata .= "	<div id=\"wtw_menuchatmaxdiv\">\r\n";
 			$zformdata .= "	<div id=\"wtw_menuchatscroll\" class=\"wtw-mainmenuscroll\">\r\n";
 			$zformdata .= "		<div id=\"wtw_startconnect\"></div>\r\n";
 			$zformdata .= "		<div id=\"wtw_chatsendrequests\"></div>\r\n";
+			$zformdata .= "		<div id=\"wtw_voicechatsendrequests\"></div>\r\n";
 			$zformdata .= "	</div>\r\n";
 			$zformdata .= "	</div>\r\n";
 		} catch (Exception $e) {
@@ -162,6 +170,7 @@ class wtw3dinternet {
 	}
 
 	public function admin3dInternetSettingsForm() {
+		/* admin settings form for 3D Internet */
 		global $wtwplugins;
 		$zformdata = "";
 		try {
@@ -183,11 +192,15 @@ class wtw3dinternet {
 
 			$zformdata .= "				<div id=\"wtw3dinternet_multiplayertext\" class=\"wtw3dinternet-disabledlabel\" style=\"float:right;\"></div>";
 
-			$zformdata .= "				<label class=\"wtw3dinternet-switch\"><input id=\"wtw3dinternet_enablemultiplayer\" type=\"checkbox\" onclick=\"wtw3dinternet.changeSwitch(this);\"><span class=\"wtw3dinternet-slider wtw3dinternet-round\"></span></label><div id=\"wtw3dinternet_enablemultiplayertext\" class=\"wtw3dinternet-disabledlabel\">Multiplayer Disabled</div><br /><br />\r\n";
+			$zformdata .= "				<label class=\"wtw3dinternet-switch\"><input id=\"wtw3dinternet_enablemultiplayer\" type=\"checkbox\" onclick=\"wtw3dinternet.changeSwitch(this);\"><span class=\"wtw3dinternet-slider wtw3dinternet-round\"></span></label><div id=\"wtw3dinternet_enablemultiplayertext\" class=\"wtw3dinternet-disabledlabel\">Multiplayer Disabled</div><div style=\"clear:both;\"></div><br />\r\n";
 
 			$zformdata .= "				<div id=\"wtw3dinternet_chattext\" class=\"wtw3dinternet-disabledlabel\" style=\"float:right;\"></div>";
 
-			$zformdata .= "				<label class=\"wtw3dinternet-switch\"><input id=\"wtw3dinternet_enablechat\" type=\"checkbox\" onclick=\"wtw3dinternet.changeSwitch(this);\"><span class=\"wtw3dinternet-slider wtw3dinternet-round\"></span></label><div id=\"wtw3dinternet_enablechattext\" class=\"wtw3dinternet-disabledlabel\">Multiplayer Chat Disabled</div><br />\r\n";
+			$zformdata .= "				<label class=\"wtw3dinternet-switch\"><input id=\"wtw3dinternet_enablechat\" type=\"checkbox\" onclick=\"wtw3dinternet.changeSwitch(this);\"><span class=\"wtw3dinternet-slider wtw3dinternet-round\"></span></label><div id=\"wtw3dinternet_enablechattext\" class=\"wtw3dinternet-disabledlabel\">Multiplayer Chat Disabled</div><div style=\"clear:both;\"></div><br />\r\n";
+
+			$zformdata .= "				<div id=\"wtw3dinternet_voicechattext\" class=\"wtw3dinternet-disabledlabel\" style=\"float:right;\"></div>";
+
+			$zformdata .= "				<label class=\"wtw3dinternet-switch\"><input id=\"wtw3dinternet_enablevoicechat\" type=\"checkbox\" onclick=\"wtw3dinternet.changeSwitch(this);\"><span class=\"wtw3dinternet-slider wtw3dinternet-round\"></span></label><div id=\"wtw3dinternet_enablevoicechattext\" class=\"wtw3dinternet-disabledlabel\">Multiplayer Voice Chat Disabled</div><div style=\"clear:both;\"></div>\r\n";
 			$zformdata .= "			</div>\r\n";
 			
 			/* for future use */
@@ -195,6 +208,8 @@ class wtw3dinternet {
 			$zformdata .= "				<div class=\"wtw3dinternet-controlpaneltitlediv\">Franchising Settings</div>\r\n";
 			$zformdata .= "				<label class=\"wtw3dinternet-switch\"><input id=\"wtw3dinternet_enablefranchisebuildings\" type=\"checkbox\" onclick=\"wtw3dinternet.changeSwitch(this);\"><span class=\"wtw3dinternet-slider wtw3dinternet-round\"></span></label><div id=\"wtw3dinternet_enablefranchisebuildingstext\" class=\"wtw3dinternet-disabledlabel\">3D Buildings Franchising Disabled</div><br />\r\n";
 			$zformdata .= "			</div>\r\n";
+
+			$zformdata .= "			<br /><br /><div onclick=\"WTW.toggle('wtw_videopreview');\" class=\"wtw-logincancel\">TEST VIDEO</div>\r\n";
 
 			$zformdata .= "		</div>\r\n";
 			$zformdata .= "	</div>\r\n";
@@ -206,6 +221,7 @@ class wtw3dinternet {
 	}
 		
 	public function _3dInternetSettingsForm() {
+		/* form for multiplayer settings on browse menu */
 		$zformdata = "";
 		try {
 			$zformdata .= "<div id=\"wtw_multiplayernote\" class=\"wtw-menunote\" style=\"display:none;visibility:hidden;\">Multi-Player will allow you to see other users' avatars Walk around in the 3D Community you are viewing.<br /><br />";
@@ -231,9 +247,6 @@ class wtw3dinternet {
 		}
 		return $zformdata;
 	}
-	
-
-
 	
 	public function checkTablesForUpdates() {
 		/* Table definitions for plugin - used for new installs and updates */

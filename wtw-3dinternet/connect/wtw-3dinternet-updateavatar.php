@@ -5,30 +5,30 @@ try {
 	$wtwconnect->trackPageView($wtwconnect->domainurl."/connect/wtw-3dinternet-updateavatar.php");
 	
 	/* get values from querystring or session */
-	$zinstanceid = base64_decode($wtwconnect->getVal('i',''));
-	$zuseravatarid = base64_decode($wtwconnect->getVal('u',''));
-	$zglobaluseravatarid = base64_decode($wtwconnect->getVal('g',''));
-	$zavatarid = base64_decode($wtwconnect->getVal('ad',''));
-	$zuserid = base64_decode($wtwconnect->getVal('d',''));
-	$zobjectfolder = base64_decode($wtwconnect->getVal('o',''));
-	$zobjectfile = base64_decode($wtwconnect->getVal('f',''));
-	$zdomain = base64_decode($wtwconnect->getVal('m',''));
-	$zsecure = base64_decode($wtwconnect->getVal('s',''));
-	$zscalingx = base64_decode($wtwconnect->getVal('x',''));
-	$zscalingy = base64_decode($wtwconnect->getVal('y',''));
-	$zscalingz = base64_decode($wtwconnect->getVal('z',''));
-	$zdisplayname = base64_decode($wtwconnect->getVal('n',''));
-	$zprivacy = base64_decode($wtwconnect->getVal('p',''));
-	$zenteranimation = base64_decode($wtwconnect->getVal('en','1'));
-	$zenteranimationparameter = base64_decode($wtwconnect->getVal('enp',''));
-	$zexitanimation = base64_decode($wtwconnect->getVal('ex','1'));
-	$zexitanimationparameter = base64_decode($wtwconnect->getVal('exp',''));
-	$zwalkspeed = base64_decode($wtwconnect->getVal('w','1'));
-	$zwalkanimationspeed = base64_decode($wtwconnect->getVal('v','1'));
-	$zturnspeed = base64_decode($wtwconnect->getVal('t','1'));
-	$zturnanimationspeed = base64_decode($wtwconnect->getVal('r','1'));
-	$zip = base64_decode($wtwconnect->getVal('a',''));
-	$zserverinstanceid = base64_decode($wtwconnect->getVal('si',''));
+	$zinstanceid = $wtwconnect->decode64($wtwconnect->getVal('i',''));
+	$zuseravatarid = $wtwconnect->decode64($wtwconnect->getVal('u',''));
+	$zglobaluseravatarid = $wtwconnect->decode64($wtwconnect->getVal('g',''));
+	$zavatarid = $wtwconnect->decode64($wtwconnect->getVal('ad',''));
+	$zuserid = $wtwconnect->decode64($wtwconnect->getVal('d',''));
+	$zobjectfolder = $wtwconnect->decode64($wtwconnect->getVal('o',''));
+	$zobjectfile = $wtwconnect->decode64($wtwconnect->getVal('f',''));
+	$zdomain = $wtwconnect->decode64($wtwconnect->getVal('m',''));
+	$zsecure = $wtwconnect->decode64($wtwconnect->getVal('s',''));
+	$zscalingx = $wtwconnect->decode64($wtwconnect->getVal('x',''));
+	$zscalingy = $wtwconnect->decode64($wtwconnect->getVal('y',''));
+	$zscalingz = $wtwconnect->decode64($wtwconnect->getVal('z',''));
+	$zdisplayname = $wtwconnect->decode64($wtwconnect->getVal('n',''));
+	$zprivacy = $wtwconnect->decode64($wtwconnect->getVal('p',''));
+	$zenteranimation = $wtwconnect->decode64($wtwconnect->getVal('en','1'));
+	$zenteranimationparameter = $wtwconnect->decode64($wtwconnect->getVal('enp',''));
+	$zexitanimation = $wtwconnect->decode64($wtwconnect->getVal('ex','1'));
+	$zexitanimationparameter = $wtwconnect->decode64($wtwconnect->getVal('exp',''));
+	$zwalkspeed = $wtwconnect->decode64($wtwconnect->getVal('w','1'));
+	$zwalkanimationspeed = $wtwconnect->decode64($wtwconnect->getVal('v','1'));
+	$zturnspeed = $wtwconnect->decode64($wtwconnect->getVal('t','1'));
+	$zturnanimationspeed = $wtwconnect->decode64($wtwconnect->getVal('r','1'));
+	$zip = $wtwconnect->decode64($wtwconnect->getVal('a',''));
+	$zserverinstanceid = $wtwconnect->decode64($wtwconnect->getVal('si',''));
 	$zusertoken = $wtwconnect->getVal('at','');
 	$zrefresh = $wtwconnect->getVal('refresh','');
 
@@ -60,7 +60,7 @@ try {
 	}
 
 	if (empty($zanonuseravatarid) || !isset($zanonuseravatarid)) {
-		/* select useravatarid data */
+		/* select anonymous useravatarid data by instance */
 		$zresults = $wtwconnect->query("
 			select useravatarid 
 			from ".WTW_3DINTERNET_PREFIX."useravatars 
@@ -72,6 +72,7 @@ try {
 		}
 	}
 	if (empty($zuseruseravatarid) || !isset($zuseruseravatarid)) {
+		/* select useravatarid data by userid */
 		$zresults = $wtwconnect->query("
 			select useravatarid 
 			from ".WTW_3DINTERNET_PREFIX."useravatars 
@@ -94,6 +95,7 @@ try {
 	}
 
 	if (!empty($zfounduseravatarid) && isset($zfounduseravatarid)) {
+		/* update temp tables for active avatar */
 		$wtwconnect->query("
 			update ".WTW_3DINTERNET_PREFIX."useravatars
 			set  userid='".$zuserid."',
@@ -128,6 +130,7 @@ try {
 		");
 		$zuseravatarid = $zfounduseravatarid;
 	} else {
+		/* insert active avatar into temp tables */
 		$wtwconnect->query("
 			insert into ".WTW_3DINTERNET_PREFIX."useravatars
 				(instanceid,
@@ -197,9 +200,11 @@ try {
 	/* get latest user avatar settings */
 	if(ini_get('allow_url_fopen') ) {
 		if (!isset($zglobaluseravatarid) || empty($zglobaluseravatarid)) {
+			/* get local avatar */
 			$avatarurl = $wtwconnect->domainurl."/connect/useravatar.php?a=".base64_encode($zuseravatarid)."&i=".base64_encode($zinstanceid)."&d=".base64_encode($zuserid)."&p=".base64_encode($zip);
 			$zavatardata = file_get_contents($avatarurl);
 		} else {
+			/* get global avatar */
 			$avatarurl = "https://3dnet.walktheweb.com/connect/globalavatar.php?usertoken=".$zusertoken."&globaluseravatarid=".base64_encode($zglobaluseravatarid)."&serverinstanceid=".base64_encode($zserverinstanceid);
 			$zavatardata = file_get_contents($avatarurl);
 		}

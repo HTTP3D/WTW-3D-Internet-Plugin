@@ -5,17 +5,17 @@ try {
 	$wtwconnect->trackPageView($wtwconnect->domainurl."/connect/wtw-3dinternet-getavatar.php");
 	
 	/* get values from querystring or session */
-	$zuseravatarid = base64_decode($wtwconnect->getVal('a',''));
-	$zinstanceid = base64_decode($wtwconnect->getVal('i',''));
-	$zuserid = base64_decode($wtwconnect->getVal('d',''));
-	$zcommunityid = base64_decode($wtwconnect->getVal('c',''));
-	$zbuildingid = base64_decode($wtwconnect->getVal('b',''));
+	$zuseravatarid = $wtwconnect->decode64($wtwconnect->getVal('a',''));
+	$zinstanceid = $wtwconnect->decode64($wtwconnect->getVal('i',''));
+	$zuserid = $wtwconnect->decode64($wtwconnect->getVal('d',''));
+	$zcommunityid = $wtwconnect->decode64($wtwconnect->getVal('c',''));
+	$zbuildingid = $wtwconnect->decode64($wtwconnect->getVal('b',''));
 	
 	$zfounduseravatarid = "";
 	$zanonuseravatarid = "";
 	$zuseruseravatarid = "";
 	
-	/* select useravatarid data */
+	/* select anonymous useravatarid data by instance */
 	$zresults = $wtwconnect->query("
 		select useravatarid 
 		from ".WTW_3DINTERNET_PREFIX."useravatars 
@@ -26,7 +26,8 @@ try {
 	foreach ($zresults as $zrow) {
 		$zanonuseravatarid = $zrow["useravatarid"];
 	}
-
+	
+	/* select useravatarid data by userid */
 	$zresults = $wtwconnect->query("
 		select useravatarid 
 		from ".WTW_3DINTERNET_PREFIX."useravatars 
@@ -49,7 +50,8 @@ try {
 	}
 	
 	echo $wtwconnect->addConnectHeader($wtwconnect->domainname);
-
+	
+	/* format response data */
 	$zavatardef = array();
 	$zavatar = array();
 	$zavatarparts = array();
@@ -70,6 +72,7 @@ try {
 	);
 	$zavataranimationdefs = array();
 	if (!empty($zfounduseravatarid) && isset($zfounduseravatarid)) {
+		/* retrieve avatar by useravatarid */
 		$zresults = $wtwconnect->query("
 			select a.*,
 				case when '".$zuserid."' = '' then 'Anonymous'
@@ -112,6 +115,7 @@ try {
 				'objectanimations'=>null
 			);
 			
+			/* retrieve avatar colors by useravatarid */
 			$zresults2 = $wtwconnect->query("
 				select c.*
 				from ".WTW_3DINTERNET_PREFIX."useravatarcolors c 
@@ -131,6 +135,7 @@ try {
 				$j += 1;
 			}
 			
+			/* retrieve avatar animations by useravatarid */
 			$zresults2 = $wtwconnect->query("
 				select u.*
 				from ".WTW_3DINTERNET_PREFIX."useravataranimations u 
@@ -158,7 +163,8 @@ try {
 				);
 				$j += 1;
 			}
-
+			
+			/* format requrn data set */
 			$zavatardef = array(
 				'name'=> "person-".$zpersoninstanceid, 
 				'useravatarid'=> $zuseravatarid, 

@@ -1,18 +1,10 @@
 <?php
 #	pluginname = wtw-3dinternet
 #	title = WalkTheWeb 3D Internet
-#	description = 3D Internet connects your WalkTheWeb instance to the World with Multiplayer and Chat!
+#	description = 3D Internet connects your WalkTheWeb instance to the 3D Internet with Global WalkTheWeb Logins, Avatars, and options for Multiplayer and Chat!
 #	author = Aaron Dishno Ed.D.
 # 	version = 1.0.0
 
-/* change the information above for your plugin */
-/* then search and replace the following with your DEVID and PLUGIN Name: */
-/* 		WTW_3DINTERNET */
-/*		wtw3dinternet */
-/*		wtw-3dinternet */
-
-/* for more information about 3D plugins and the latest updates, see: */
-/* https://www.walktheweb.com/wiki/3d-plugin-template/ */
 /* WalkTheWeb uses BabylonJS.com game engine */
 /* https://doc.babylonjs.com/babylon101/ */
 
