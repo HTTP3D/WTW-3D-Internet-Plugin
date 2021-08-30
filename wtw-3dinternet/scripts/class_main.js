@@ -16,6 +16,7 @@ function WTW_3DINTERNET() {
 	this.admin = null;
 	this.move = null;
 	this.chat = null;
+	this.chatText = [];
 	this.voicechat = null;
 	this.lastAnimations = '';
 	this.avatars = [];
@@ -38,9 +39,35 @@ WTW_3DINTERNET.prototype.onClick = function(zpickedname) {
 		let zmoldnameparts = WTW.getMoldnameParts(zpickedname);
 		if (zpickedname.indexOf('person') > -1) {
 			wtw3dinternet.avatarConnectMenu(zmoldnameparts.instanceid);
+		} else if (zpickedname.indexOf('hud-textprompt-background') > -1) {
+			/* open text prompt */
+			wtw3dinternet.promptEditText('hud-textprompt-background');
+		} else if (zpickedname.indexOf('hud-textprompt-outterbar') > -1) {
+			/* close text prompt */
+			WTW.disposeClean('hud-textprompt');
+		} else {
+			if (dGet('hud-textprompt-background') != null) {
+				var zvalue = dGet('hud-textprompt-background').value;
+				if (zvalue == '' || zvalue == '|') {
+					WTW.disposeClean('hud-textprompt');
+				} else {
+					wtw3dinternet.promptEditText('hud-textprompt-background');
+				}
+			}
 		}
 	} catch (ex) {
 		WTW.log("plugins:wtw-3dinternet:scripts-class_main.js-onClick=" + ex.message);
+	} 
+}
+
+WTW_3DINTERNET.prototype.keyUp = function(zevent) {
+	try {
+		/* check for enter key when canvas is focused and avatar is present */
+		if (WTW.canvasFocus == 1 && WTW.placeHolder == 0 && zevent.keyCode == 13) {
+			wtw3dinternet.toggleChatPrompt();
+		}
+	} catch (ex) {
+		WTW.log("plugins:wtw-3dinternet:scripts-class_main.js-keyUp=" + ex.message);
 	} 
 }
 
@@ -105,16 +132,20 @@ WTW_3DINTERNET.prototype.loadUserSettingsAfterEngine = function() {
 		/* 10 second delay on starting multiplayer so that initial scene is completely loaded. */
 		window.setTimeout(function() {
 			wtw3dinternet.initAdminSocket();
-			if (wtw3dinternet.masterMove == '1') {
-				wtw3dinternet.initMoveSocket();
-			}
-			if (wtw3dinternet.masterChat == '1') {
-				wtw3dinternet.initChatSocket();
-			}
-			if (wtw3dinternet.masterVoiceChat == '1') {
-				wtw3dinternet.initVoiceChatSocket();
-			}
-		},10000);
+			/* only start the multiplayer services for browse mode */
+			/* this will give more resources to admin mode */
+//			if (WTW.adminView == 0) {
+				if (wtw3dinternet.masterMove == '1') {
+					wtw3dinternet.initMoveSocket();
+				}
+				if (wtw3dinternet.masterChat == '1') {
+					wtw3dinternet.initChatSocket();
+				}
+				if (wtw3dinternet.masterVoiceChat == '1') {
+					wtw3dinternet.initVoiceChatSocket();
+				}
+//			}
+		},100);
 	} catch (ex) {
 		WTW.log("plugins:wtw-3dinternet:scripts-class_main.js-loadUserSettingsAfterEngine=" + ex.message);
 	} 
@@ -430,6 +461,9 @@ WTW_3DINTERNET.prototype.enableMultiplayer = function(zchecked) {
 					'serverinstanceid':dGet('wtw_serverinstanceid').value,
 					'serverip':dGet('wtw_serverip').value,
 					'roomid':communityid + buildingid + thingid,
+					'communityid':communityid,
+					'buildingid':buildingid,
+					'thingid':thingid,
 					'instanceid':dGet('wtw_tinstanceid').value,
 					'userid':dGet('wtw_tuserid').value,
 					'placeholder':WTW.placeHolder,
@@ -449,6 +483,9 @@ WTW_3DINTERNET.prototype.enableMultiplayer = function(zchecked) {
 					'serverinstanceid':dGet('wtw_serverinstanceid').value,
 					'serverip':dGet('wtw_serverip').value,
 					'roomid':communityid + buildingid + thingid,
+					'communityid':communityid,
+					'buildingid':buildingid,
+					'thingid':thingid,
 					'instanceid':dGet('wtw_tinstanceid').value,
 					'userid':dGet('wtw_tuserid').value,
 					'placeholder':WTW.placeHolder,
@@ -550,6 +587,9 @@ WTW_3DINTERNET.prototype.beforeUnloadMove = function() {
 			wtw3dinternet.move.emit('disconnect', {
 				'serverinstanceid':dGet('wtw_serverinstanceid').value,
 				'roomid':communityid + buildingid + thingid,
+				'communityid':communityid,
+				'buildingid':buildingid,
+				'thingid':thingid,
 				'domainurl':wtw_domainurl,
 				'siteurl':wtw_websiteurl,
 				'instanceid':dGet('wtw_tinstanceid').value,
@@ -562,6 +602,9 @@ WTW_3DINTERNET.prototype.beforeUnloadMove = function() {
 			wtw3dinternet.admin.emit('disconnect server', {
 				'serverinstanceid':dGet('wtw_serverinstanceid').value,
 				'roomid':communityid + buildingid + thingid,
+				'communityid':communityid,
+				'buildingid':buildingid,
+				'thingid':thingid,
 				'domainurl':wtw_domainurl,
 				'siteurl':wtw_websiteurl,
 				'instanceid':dGet('wtw_tinstanceid').value,
@@ -814,3 +857,4 @@ WTW_3DINTERNET.prototype.getAvatarDisplayName = function(zinstanceid) {
 	}
 	return zdisplayname;
 }
+
