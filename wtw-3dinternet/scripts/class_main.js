@@ -17,12 +17,13 @@ function WTW_3DINTERNET() {
 	this.move = null;
 	this.chat = null;
 	this.chatText = [];
-	this.voicechat = null;
-	this.lastAnimations = '';
+	this.loadZones = [];
 	this.avatars = [];
 	this.AvatarIDs = 1;
 	this.multiPlayer = 20;
 	this.multiPlayerOn = 1;
+	this.voicechat = null;
+	this.lastAnimations = '';
 	this.typingTimer = null;
 	this.mediaStream = null;
 	this.recordAudio = null;
@@ -584,6 +585,22 @@ WTW_3DINTERNET.prototype.beforeUnloadMove = function() {
 	try {
 		wtw3dinternet.avatars = [];
 		if (wtw3dinternet.move != null) {
+			for (var i = 0; i < WTW.actionZones.length; i++) {
+				if (WTW.actionZones[i] != null) {
+					var zmoldname = WTW.actionZones[i].moldname;
+					var zactionzone = WTW.getMeshOrNodeByID(zmoldname);
+					var zmeinzone = false;
+					if (WTW.myAvatar != null) {
+						zmeinzone = WTW.myAvatar.intersectsMesh(zactionzone, false);
+					}
+					if (zmeinzone && zmoldname != undefined) {
+						if (zmoldname.indexOf("loadzone") > -1) {
+							/* trigger plugins when avatar exits zone */
+							WTW.pluginsExitActionZone(zmoldname, WTW.actionZones[i]);
+						}
+					}
+				}
+			}			
 			wtw3dinternet.move.emit('disconnect', {
 				'serverinstanceid':dGet('wtw_serverinstanceid').value,
 				'roomid':communityid + buildingid + thingid,
