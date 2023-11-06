@@ -986,6 +986,50 @@ WTW_3DINTERNET.prototype.downloadWebProgress = async function(zoriginalnewwebid,
 							zdataarray2['watercolorblendfactor2'] = zdataarray.watercolorblendfactor2;
 							zdataarray2['wateralpha'] = zdataarray.wateralpha;
 							zdataarray2['waterbumpid'] = zdataarray.waterbumpid;
+							zdataarray2['sceneambientcolor'] = zdataarray.sceneambientcolor;
+							zdataarray2['sceneclearcolor'] = zdataarray.sceneclearcolor;
+							zdataarray2['sceneuseclonedmeshmap'] = zdataarray.sceneuseclonedmeshmap;
+							zdataarray2['sceneblockmaterialdirtymechanism'] = zdataarray.sceneblockmaterialdirtymechanism;
+							zdataarray2['sundirectionalintensity'] = zdataarray.sundirectionalintensity;
+							zdataarray2['sundiffusecolor'] = zdataarray.sundiffusecolor;
+							zdataarray2['sunspecularcolor'] = zdataarray.sunspecularcolor;
+							zdataarray2['sungroundcolor'] = zdataarray.sungroundcolor;
+							zdataarray2['sundirectionx'] = zdataarray.sundirectionx;
+							zdataarray2['sundirectiony'] = zdataarray.sundirectiony;
+							zdataarray2['sundirectionz'] = zdataarray.sundirectionz;
+							zdataarray2['backlightintensity'] = zdataarray.backlightintensity;
+							zdataarray2['backlightdirectionx'] = zdataarray.backlightdirectionx;
+							zdataarray2['backlightdirectiony'] = zdataarray.backlightdirectiony;
+							zdataarray2['backlightdirectionz'] = zdataarray.backlightdirectionz;
+							zdataarray2['backlightdiffusecolor'] = zdataarray.backlightdiffusecolor;
+							zdataarray2['backlightspecularcolor'] = zdataarray.backlightspecularcolor;
+							zdataarray2['scenefogenabled'] = zdataarray.scenefogenabled;
+							zdataarray2['scenefogmode'] = zdataarray.scenefogmode;
+							zdataarray2['scenefogdensity'] = zdataarray.scenefogdensity;
+							zdataarray2['scenefogstart'] = zdataarray.scenefogstart;
+							zdataarray2['scenefogend'] = zdataarray.scenefogend;
+							zdataarray2['scenefogcolor'] = zdataarray.scenefogcolor;
+							zdataarray2['skytype'] = zdataarray.skytype;
+							zdataarray2['skysize'] = zdataarray.skysize;
+							zdataarray2['skyboxfolder'] = zdataarray.skyboxfolder;
+							zdataarray2['skyboxfile'] = zdataarray.skyboxfile;
+							zdataarray2['skyboximageleft'] = zdataarray.skyboximageleft;
+							zdataarray2['skyboximageup'] = zdataarray.skyboximageup;
+							zdataarray2['skyboximagefront'] = zdataarray.skyboximagefront;
+							zdataarray2['skyboximageright'] = zdataarray.skyboximageright;
+							zdataarray2['skyboximagedown'] = zdataarray.skyboximagedown;
+							zdataarray2['skyboximageback'] = zdataarray.skyboximageback;
+							zdataarray2['skypositionoffsetx'] = zdataarray.skypositionoffsetx;
+							zdataarray2['skypositionoffsety'] = zdataarray.skypositionoffsety;
+							zdataarray2['skypositionoffsetz'] = zdataarray.skypositionoffsetz;
+							zdataarray2['skyboxmicrosurface'] = zdataarray.skyboxmicrosurface;
+							zdataarray2['skyboxpbr'] = zdataarray.skyboxpbr;
+							zdataarray2['skyboxasenvironmenttexture'] = zdataarray.skyboxasenvironmenttexture;
+							zdataarray2['skyboxblur'] = zdataarray.skyboxblur;
+							zdataarray2['skyboxdiffusecolor'] = zdataarray.skyboxdiffusecolor;
+							zdataarray2['skyboxspecularcolor'] = zdataarray.skyboxspecularcolor;
+							zdataarray2['skyboxambientcolor'] = zdataarray.skyboxambientcolor;
+							zdataarray2['skyboxemissivecolor'] = zdataarray.skyboxemissivecolor;
 							zdataarray2['skyinclination'] = zdataarray.skyinclination;
 							zdataarray2['skyluminance'] = zdataarray.skyluminance;
 							zdataarray2['skyazimuth'] = zdataarray.skyazimuth;
@@ -1302,11 +1346,13 @@ WTW_3DINTERNET.prototype.completedWebDownload = function(zoriginalnewwebid, zori
 			WTW.hide('wtw_thingtempsearchresults');
 			WTW.hide('wtw_avatartempsearchresults');
 			WTW.show('wtw_downloadcomplete');
+			var zhmenu = '';
 			switch (zoriginalwebtype) {
 				case 'community':
 					dGet('wtw_downloadcompletemessage').innerHTML = 'You can find your <b>New 3D Community</b> in the <b>Admin Menu</b><br />or select from the following:';
 					dGet('wtw_bopenwebdownload').value = 'Open Your New 3D Community in the Editor';
 					dGet('wtw_bcontinuewebdownload').onclick = function() { WTW.openFullPageForm('importpage','communities'); };
+					zhmenu = '25';
 					WTW.hideAdminMenu();
 					WTW.getSelectCommunitiesList();
 					WTW.show('wtw_adminmenu22');
@@ -1315,6 +1361,7 @@ WTW_3DINTERNET.prototype.completedWebDownload = function(zoriginalnewwebid, zori
 					dGet('wtw_downloadcompletemessage').innerHTML = 'You can find your <b>New 3D Building</b> in the <b>Admin Menu</b><br />or select from the following:';
 					dGet('wtw_bopenwebdownload').value = 'Open Your New 3D Building in the Editor';
 					dGet('wtw_bcontinuewebdownload').onclick = function() { WTW.openFullPageForm('importpage','buildings'); };
+					zhmenu = '5';
 					WTW.hideAdminMenu();
 					WTW.getSelectBuildingsList();
 					WTW.show('wtw_adminmenu2');
@@ -1323,6 +1370,7 @@ WTW_3DINTERNET.prototype.completedWebDownload = function(zoriginalnewwebid, zori
 					dGet('wtw_downloadcompletemessage').innerHTML = 'You can find your <b>New 3D Thing</b> in the <b>Admin Menu</b><br />or select from the following:';
 					dGet('wtw_bopenwebdownload').value = 'Open Your New 3D Thing in the Editor';
 					dGet('wtw_bcontinuewebdownload').onclick = function() { WTW.openFullPageForm('importpage','things'); };
+					zhmenu = '35';
 					WTW.hideAdminMenu();
 					WTW.getSelectThingsList();
 					WTW.show('wtw_adminmenu32');
@@ -1331,12 +1379,13 @@ WTW_3DINTERNET.prototype.completedWebDownload = function(zoriginalnewwebid, zori
 					dGet('wtw_downloadcompletemessage').innerHTML = 'You can find your <b>New 3D Avatar</b> in the <b>Admin Menu</b><br />or select from the following:';
 					dGet('wtw_bopenwebdownload').value = 'Open Your New 3D Avatar in the Editor';
 					dGet('wtw_bcontinuewebdownload').onclick = function() { WTW.openFullPageForm('importpage','avatars'); };
+					zhmenu = '';
 					WTW.hideAdminMenu();
 					WTW.openSelectAvatar();
 					WTW.show('wtw_adminSelectAvatarDiv');
 					break;
 			}
-			dGet('wtw_bopenwebdownload').onclick = function() { window.location.href = '/admin.php?'+ zoriginalwebtype + 'id=' + zoriginalnewwebid; };
+			dGet('wtw_bopenwebdownload').onclick = function() { window.location.href = '/admin.php?'+ zoriginalwebtype + 'id=' + zoriginalnewwebid + '&hmenu=' + zhmenu; };
 			WTW.show('wtw_selectwebform');
 		}		
 		
@@ -1434,6 +1483,27 @@ WTW_3DINTERNET.prototype.downloadWebFromQueue = async function(ztemplatename, zd
 						}
 					}
 				}
+				if (dGet('wtw_adminmenudashboardbadge') != null) {
+					if (WTW.isNumeric(dGet('wtw_adminmenudashboardbadge').innerHTML)) {
+						var zbadges = Number(dGet('wtw_adminmenudashboardbadge').innerHTML);
+						zbadges -= 1;
+						dGet('wtw_adminmenudashboardbadge').innerHTML = zbadges;
+						if (zbadges < 1) {
+							WTW.hide('wtw_adminmenudashboardbadge');
+						}
+					}
+				}
+				if (dGet('wtw_admindashboardbadge') != null) {
+					if (WTW.isNumeric(dGet('wtw_admindashboardbadge').innerHTML)) {
+						var zbadges = Number(dGet('wtw_admindashboardbadge').innerHTML);
+						zbadges -= 1;
+						dGet('wtw_admindashboardbadge').innerHTML = zbadges;
+						if (zbadges < 1) {
+							WTW.hide('wtw_admindashboardbadge');
+						}
+					}
+				}
+				wtw3dinternet.updateBadges();
 			}
 		);
 		if (zprocess == '1') {

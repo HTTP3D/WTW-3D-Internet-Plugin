@@ -5,7 +5,7 @@
 function WTW_3DINTERNET() {
 	/* Add your global variables as needed here */
 	this.ver = '1.1.0';
-	this.checkConnection = null; /* connection heartbeat for Admin Channel */
+	this.masterBroadcasts = '1'; /* toggle off or on WalkTheWeb Broadcasts (server level) */
 	this.masterMove = '0'; /* toggle off or on Multiplayer Movement tracking (server level) */
 	this.masterChat = '0'; /* toggle off or on Chat (server level) */
 	this.masterVoiceChat = '0'; /* toggle off or on Voice Chat (server level) */
@@ -14,6 +14,7 @@ function WTW_3DINTERNET() {
 	this.masterSharing = '1'; /* toggle off or on Sharing Templates of 3D Webs - 3D Communities, 3D Buildings, 3D Things, and 3D Avatars (server level) */
 	this.masterFranchising = '1'; /* toggle off or on ability to franchise out your buildings to other server 3D Scenes*/
 	this.masterFranchiseAdditions = '1'; /* toggle off or on ability to add franchised buildings and things to your server 3D Scenes*/
+	this.root = null; /* root channel object - used for socket connect and disconnect */
 	this.admin = null; /* admin channel object - used for connection and checking multiplayer server settings */
 	this.move = null; /* movement channel object - tracks and sends multiplayer movements */
 	this.chat = null; /* chat channel object - processes all chat to and from your user */
@@ -204,10 +205,8 @@ WTW_3DINTERNET.prototype.openDashboardForm = async function(zshow) {
 								dGet('wtw_latestvideodetails').innerHTML = 'Presented by: ' + zresponse[i].presenter + ' on ' + WTW.formatDate(zresponse[i].updatedate) + '<br /><br />' + atob(zresponse[i].description);
 								if (zresponse[i].videourl.indexOf('?v=') > -1) {
 									var zyoutubeid = zresponse[i].videourl.split('?v=')[1];
-									dGet('wtw_latestvideo').innerHTML = "<iframe width='100%' height='auto' src='https://www.youtube.com/embed/" + zyoutubeid + "?list=PLnMgA5ebbr8KXw9z5vp4E202e-RTKa9X-' frameborder='0' allowfullscreen style='min-height:350px;'></iframe>";
+									dGet('wtw_latestvideo').innerHTML = "<iframe width='100%' height='auto' src='https://www.youtube.com/embed/" + zyoutubeid + "?list=PLnMgA5ebbr8KXw9z5vp4E202e-RTKa9X-' frameborder='0' allowfullscreen style='min-height:350px;' title='WalkTheWeb Video' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'></iframe>";
 								}
-							} else {
-								
 							}
 						}
 					}
@@ -274,16 +273,25 @@ WTW_3DINTERNET.prototype.adminMenuItemSelected = function(zobj) {
 		if (zobj != null) {
 			if (zobj.id != undefined) {
 				switch (zobj.id) {
+					case 'wtw_admin3dinternetmenu':
 					case 'wtw_admincommunityaddbuilding':
 						WTW.hideAdminMenu();
 						wtw3dinternet.showFranchise(dGet('wtw_buildingbuttonlocal'),'building');
 						WTW.show('wtw_adminmenu27');
 						break;
+					case 'wtw_admincommunityaddthing':
+						WTW.hideAdminMenu();
+						wtw3dinternet.getAddThingList();
+						WTW.show('wtw_adminmenu13');
+						break;
+					case 'wtw_adminbuildingaddthing':
+						WTW.hideAdminMenu();
+						wtw3dinternet.getAddThingList()
+						WTW.show('wtw_adminmenu13');
+						break;
 					case 'wtw_bback29':
 					case 'wtw_cancel29':	
-						WTW.hideAdminMenu();
 						wtw3dinternet.saveShareCommunityForm();
-						WTW.show('wtw_adminmenu24');
 						break;
 					case 'wtw_bsharecommunitytemp':
 						wtw3dinternet.saveShareCommunityForm();
@@ -292,9 +300,7 @@ WTW_3DINTERNET.prototype.adminMenuItemSelected = function(zobj) {
 						}
 						break;
 					case 'wtw_bback9':
-						WTW.hideAdminMenu();
 						wtw3dinternet.saveShareBuildingForm();
-						WTW.show('wtw_adminmenu4');
 						break;
 					case 'wtw_bsharebuildingtemp':
 						wtw3dinternet.saveShareBuildingForm();
@@ -303,14 +309,10 @@ WTW_3DINTERNET.prototype.adminMenuItemSelected = function(zobj) {
 						}
 						break;
 					case 'wtw_adminmenubuildsharecancel':
-						WTW.hideAdminMenu();
 						wtw3dinternet.saveShareBuildingForm();
-						WTW.show('wtw_adminmenu4');
 						break;
 					case 'wtw_bback39':
-						WTW.hideAdminMenu();
 						wtw3dinternet.saveShareThingForm();
-						WTW.show('wtw_adminmenu34');
 						break;
 					case 'wtw_bsharethingtemplate':
 						wtw3dinternet.saveShareThingForm();
@@ -319,15 +321,10 @@ WTW_3DINTERNET.prototype.adminMenuItemSelected = function(zobj) {
 						}
 						break;
 					case 'wtw_cancel39':	
-						WTW.hideAdminMenu();
 						wtw3dinternet.saveShareThingForm();
-						WTW.show('wtw_adminmenu34');
 						break;
-					case 'wtw_bbackwtw_adminShareAvatarDiv':
 					case 'wtw_cancelshareavatar':
-						WTW.hideAdminMenu();
 						wtw3dinternet.saveShareAvatarForm();
-						WTW.backToTools();
 						break;
 					case 'wtw_bshareavatartemplate':
 						wtw3dinternet.saveShareAvatarForm();
@@ -398,19 +395,25 @@ WTW_3DINTERNET.prototype.completedConfirmation = function(zoption) {
 	}
 }
 
-WTW_3DINTERNET.prototype.onClick = function(zpickedname) {
-	/* process onclick events for plugin */
+WTW_3DINTERNET.prototype.inputClick = function(zpickedname) {
+	/* process inputClick events for plugin */
 	try {
 		zpickedname = zpickedname.toLowerCase();
 		let zmoldnameparts = WTW.getMoldnameParts(zpickedname);
 		if (zpickedname.indexOf('person') > -1) {
 			wtw3dinternet.avatarConnectMenu(zmoldnameparts.instanceid);
+			/* clear zpickedname to not process any other clicks */
+			zpickedname = '';
 		} else if (zpickedname.indexOf('hud-textprompt-background') > -1) {
 			/* open text prompt */
 			wtw3dinternet.promptEditText('hud-textprompt-background');
+			/* clear zpickedname to not process any other clicks */
+			zpickedname = '';
 		} else if (zpickedname.indexOf('hud-textprompt-outterbar') > -1) {
 			/* close text prompt */
 			WTW.disposeClean('hud-textprompt');
+			/* clear zpickedname to not process any other clicks */
+			zpickedname = '';
 		} else {
 			if (dGet('hud-textprompt-background') != null) {
 				var zvalue = dGet('hud-textprompt-background').value;
@@ -422,8 +425,9 @@ WTW_3DINTERNET.prototype.onClick = function(zpickedname) {
 			}
 		}
 	} catch (ex) {
-		WTW.log('plugins:wtw-3dinternet:scripts-class_main.js-onClick=' + ex.message);
+		WTW.log('plugins:wtw-3dinternet:scripts-class_main.js-inputClick=' + ex.message);
 	} 
+	return zpickedname;
 }
 
 WTW_3DINTERNET.prototype.keyUp = function(zevent) {
@@ -754,6 +758,15 @@ WTW_3DINTERNET.prototype.setControlPanelSwitches = function() {
 					dGet('wtw3dinternet_enableanonymoustext').innerHTML = 'Anonymous (Guest) Avatars Disabled';
 					dGet('wtw3dinternet_enableanonymous').checked = false;
 				}
+				if (wtw3dinternet.masterBroadcasts == '1') {
+					dGet('wtw3dinternet_enablebroadcaststext').className = 'wtw-enablelabel';
+					dGet('wtw3dinternet_enablebroadcaststext').innerHTML = 'Broadcasts Enabled';
+					dGet('wtw3dinternet_enablebroadcasts').checked = true;
+				} else {
+					dGet('wtw3dinternet_enablebroadcaststext').className = 'wtw-disabledlabel';
+					dGet('wtw3dinternet_enablebroadcaststext').innerHTML = 'Broadcasts Disabled';
+					dGet('wtw3dinternet_enablebroadcasts').checked = false;
+				}
 				if (wtw3dinternet.masterMove == '1') {
 					dGet('wtw3dinternet_enablemultiplayertext').className = 'wtw-enablelabel';
 					dGet('wtw3dinternet_enablemultiplayertext').innerHTML = 'Multiplayer Enabled';
@@ -863,6 +876,9 @@ WTW_3DINTERNET.prototype.changeSwitch = function(zobj) {
 			case 'wtw3dinternet_enableanonymous':
 				WTW.anonymousLogins = zchecked;
 				break;
+			case 'wtw3dinternet_enablebroadcasts':
+				wtw3dinternet.enableBroadcasts(zchecked);
+				break;
 			case 'wtw3dinternet_enablemultiplayer':
 				wtw3dinternet.enableMultiplayer(zchecked);
 				break;
@@ -940,6 +956,20 @@ WTW_3DINTERNET.prototype.serviceCheck = async function(zservice) {
 		);
 	} catch (ex) {
 		WTW.log('plugins:wtw-3dinternet:scripts-class_main.js-serviceCheck=' + ex.message);
+	} 
+}
+
+WTW_3DINTERNET.prototype.enableBroadcasts = function(zchecked) {
+	/* toggle multiplayer on or off */
+	try {
+		wtw3dinternet.masterBroadcasts = zchecked;
+		if (wtw3dinternet.masterBroadcasts == '1') {
+			dGet('wtw3dinternet_enablebroadcaststext').innerHTML = 'Broadcasts Enabled';
+		} else {
+			dGet('wtw3dinternet_enablebroadcaststext').innerHTML = 'Broadcasts Disabled';
+		}
+	} catch (ex) {
+		WTW.log('plugins:wtw-3dinternet:scripts-class_main.js-enableBroadcasts=' + ex.message);
 	} 
 }
 
@@ -1195,12 +1225,6 @@ WTW_3DINTERNET.prototype.beforeUnloadMove = function() {
 			});
 			wtw3dinternet.sendCommand('', 'scene command', 'leave scene');
 		}
-		if (wtw3dinternet.admin != null) {
-			wtw3dinternet.admin.emit('disconnect server', {
-				'serverinstanceid':dGet('wtw_serverinstanceid').value,
-				'instanceid':dGet('wtw_tinstanceid').value
-			});
-		}
 	} catch (ex) {
 		/* use for troubleshooting only */
 		/* WTW.log('plugins:wtw-3dinternet:scripts-class_main.js-beforeUnloadMove=' + ex.message); */
@@ -1234,7 +1258,7 @@ WTW_3DINTERNET.prototype.openLocalLogin = function(zitem, zwidth, zheight) {
 					}
 				} else {
 					if (WTW.anonymousLogins == '1') {
-						zpagediv += "<div class='wtw-loginbutton' onclick=\"WTW.openLocalLogin('Select an Anonymous Avatar', .4, .5);\"><img src='/content/system/images/menuprofilebig.png' alt='Anonymous Login' title='Anonymous Login' class='wtw-image40'/><div style='margin-top:10px;'>Continue as Guest</div></div>";
+						zpagediv += "<div class='wtw-loginbutton' onclick=\"WTW.openLoginHUD('Select My Avatar');\"><img src='/content/system/images/menuprofilebig.png' alt='Anonymous Login' title='Anonymous Login' class='wtw-image40'/><div style='margin-top:10px;'>Continue as Guest</div></div>";
 					}
 				}
 				dGet('wtw_ipagediv').innerHTML = zpagediv;
@@ -1255,151 +1279,74 @@ WTW_3DINTERNET.prototype.openLocalLogin = function(zitem, zwidth, zheight) {
 	}
 }
 
-WTW_3DINTERNET.prototype.getMyAvatarList = function(zloaddefault, zeditmode) {
+WTW_3DINTERNET.prototype.hudLoginLoadAvatarsArray = function(zfilter, zdefaultdisplayname) {
 	/* retrieve my available avatars to select one for this 3D Scene */
 	try {
-		if (zeditmode == undefined) {
-			zeditmode = false;
-		}
-		let zmyavatars = [];
-		let zversioncheck = [];
-		let zlocalcomplete = false;
-		let zglobalcomplete = false;
-		if (WTW.localLogins == '1') {
-			if (dGet('wtw_myavatars') != null) {
-				WTW.getJSON('/connect/avatars.php?groups=my', 
-					function(zresponse) {
-						if (zresponse != null) {
-							zresponse = JSON.parse(zresponse);
-							if (zresponse.avatars != null) {
-								if (zresponse.avatars.length > 0) {
-									for (var i=0;i<zresponse.avatars.length;i++) {
-										if (zresponse.avatars[i] != null) {
-											zversioncheck[zversioncheck.length] = {
-												'webtype': 'avatar',
-												'globaluseravatarid': '',
-												'useravatarid': zresponse.avatars[i].useravatarid,
-												'webid': zresponse.avatars[i].avatarid,
-												'webname': btoa(zresponse.avatars[i].displayname),
-												'webdesc': btoa(zresponse.avatars[i].avatardescription),
-												'webimage': zresponse.avatars[i].snapshots.thumbnail,
-												'versionid': zresponse.avatars[i].versionid,
-												'version': zresponse.avatars[i].version
-											};
-											zmyavatars[zmyavatars.length] = {
-												'globaluseravatarid': '',
-												'useravatarid': zresponse.avatars[i].useravatarid,
-												'avatarid': zresponse.avatars[i].avatarid,
-												'versionid': zresponse.avatars[i].versionid,
-												'version': zresponse.avatars[i].version,
-												'versionorder': zresponse.avatars[i].versionorder,
-												'versiondesc': zresponse.avatars[i].versiondesc,
-												'avatargroup': zresponse.avatars[i].avatargroup,
-												'displayname': zresponse.avatars[i].displayname,
-												'avatardescription': zresponse.avatars[i].avatardescription,
-												'gender': zresponse.avatars[i].gender,
-												'objects': {
-													'folder': zresponse.avatars[i].objects.folder,
-													'file': zresponse.avatars[i].objects.file
-												},
-												'scaling': {
-													'x': zresponse.avatars[i].scaling.x,
-													'y': zresponse.avatars[i].scaling.y,
-													'z': zresponse.avatars[i].scaling.z
-												},
-												'snapshots': {
-													'full': zresponse.avatars[i].snapshots.full,
-													'thumbnail': zresponse.avatars[i].snapshots.thumbnail
-												},
-												'sortorder': zresponse.avatars[i].sortorder,
-												'selected': false
-											}
-										}
-									}
-								}
-							}
-						}
-						zlocalcomplete = true;
-						if (zglobalcomplete || WTW.globalLogins != '1') {
-							WTW.showMyAvatarList(zmyavatars, .4, .8, zeditmode, zversioncheck);
-						}
-					}
-				);
-			}
-		}
 		if (WTW.globalLogins == '1') {
-			if (dGet('wtw_myavatars') != null) {
-				/* call for global list */
-				var zrequest = {
-					'usertoken':dGet('wtw_tusertoken').value,
-					'globaluserid':btoa(dGet('wtw_tglobaluserid').value),
-					'serverinstanceid':btoa(dGet('wtw_serverinstanceid').value),
-					'groups':'my',
-					'function':'getmyglobalavatars'
-				};
-				WTW.postJSON('https://3dnet.walktheweb.com/connect/globalavatars.php', zrequest, 
-					function(zresponse) {
-						zresponse = JSON.parse(zresponse);
-						if (zresponse.avatars != null) {
-							if (zresponse.avatars.length > 0) {
-								for (var i=0;i<zresponse.avatars.length;i++) {
-									if (zresponse.avatars[i] != null) {
-										zversioncheck[zversioncheck.length] = {
-											'webtype': 'avatar',
-											'webname': btoa(zresponse.avatars[i].displayname),
-											'webdesc': btoa(zresponse.avatars[i].avatardescription),
-											'webimage': zresponse.avatars[i].snapshots.thumbnail,
-											'globaluseravatarid': zresponse.avatars[i].globaluseravatarid,
-											'useravatarid': zresponse.avatars[i].useravatarid,
-											'webid': zresponse.avatars[i].avatarid,
-											'versionid': zresponse.avatars[i].versionid,
-											'version': zresponse.avatars[i].version
-										};
-										zmyavatars[zmyavatars.length] = {
-											'globaluseravatarid': zresponse.avatars[i].globaluseravatarid,
-											'useravatarid': zresponse.avatars[i].useravatarid,
-											'avatarid': zresponse.avatars[i].avatarid,
-											'versionid': zresponse.avatars[i].versionid,
-											'version': zresponse.avatars[i].version,
-											'versionorder': zresponse.avatars[i].versionorder,
-											'versiondesc': zresponse.avatars[i].versiondesc,
-											'avatargroup': zresponse.avatars[i].avatargroup,
-											'displayname': zresponse.avatars[i].displayname,
-											'avatardescription': zresponse.avatars[i].avatardescription,
-											'gender': zresponse.avatars[i].gender,
-											'objects': {
-												'folder': zresponse.avatars[i].objects.folder,
-												'file': zresponse.avatars[i].objects.file
-											},
-											'scaling': {
-												'x': zresponse.avatars[i].scaling.x,
-												'y': zresponse.avatars[i].scaling.y,
-												'z': zresponse.avatars[i].scaling.z
-											},
-											'snapshots': {
-												'full': zresponse.avatars[i].snapshots.full,
-												'thumbnail': zresponse.avatars[i].snapshots.thumbnail
-											},
-											'sortorder': zresponse.avatars[i].sortorder,
-											'selected': false
+			/* call for global list */
+			var zrequest = {
+				'usertoken':dGet('wtw_tusertoken').value,
+				'globaluserid':btoa(dGet('wtw_tglobaluserid').value),
+				'serverinstanceid':btoa(dGet('wtw_serverinstanceid').value),
+				'groups':'my',
+				'function':'getmyglobalavatars'
+			};
+			WTW.postJSON('https://3dnet.walktheweb.com/connect/globalavatars.php', zrequest, 
+				function(zresponse) {
+					zresponse = JSON.parse(zresponse);
+					if (zresponse.avatars != null) {
+						if (zresponse.avatars.length > 0) {
+							for (var i=0;i<zresponse.avatars.length;i++) {
+								if (zresponse.avatars[i] != null) {
+									if (zfilter == 'my') {
+										if (zresponse.avatars[i].displayname != '' && zdefaultdisplayname == 'Anonymous') {
+											zdefaultdisplayname = zresponse.avatars[i].displayname;
 										}
+									} else {
+										if (zresponse.avatars[i].defaultdisplayname != '' && zdefaultdisplayname == 'Anonymous') {
+											zdefaultdisplayname = zresponse.avatars[i].defaultdisplayname;
+										}
+									}
+									WTW.selectAvatars[WTW.selectAvatars.length] = {
+										'globaluseravatarid': zresponse.avatars[i].globaluseravatarid,
+										'useravatarid': zresponse.avatars[i].useravatarid,
+										'avatarid': zresponse.avatars[i].avatarid,
+										'versionid': zresponse.avatars[i].versionid,
+										'version': zresponse.avatars[i].version,
+										'versionorder': zresponse.avatars[i].versionorder,
+										'versiondesc': zresponse.avatars[i].versiondesc,
+										'avatargroup': zresponse.avatars[i].avatargroup,
+										'displayname': zresponse.avatars[i].displayname,
+										'defaultdisplayname': zresponse.avatars[i].defaultdisplayname,
+										'avatardescription': zresponse.avatars[i].avatardescription,
+										'gender': zresponse.avatars[i].gender,
+										'objects': {
+											'folder': zresponse.avatars[i].objects.folder,
+											'file': zresponse.avatars[i].objects.file
+										},
+										'scaling': {
+											'x': zresponse.avatars[i].scaling.x,
+											'y': zresponse.avatars[i].scaling.y,
+											'z': zresponse.avatars[i].scaling.z
+										},
+										'snapshots': {
+											'full': zresponse.avatars[i].snapshots.full,
+											'thumbnail': zresponse.avatars[i].snapshots.thumbnail
+										},
+										'sortorder': zresponse.avatars[i].sortorder,
+										'selected': false
 									}
 								}
 							}
 						}
-						zglobalcomplete = true;
-						if (zlocalcomplete || WTW.localLogins != '1') {
-							WTW.showMyAvatarList(zmyavatars, .4, .8, zeditmode, zversioncheck);
-						}
 					}
-				);
-			}
+					WTW.hudLoginLoadChoiceAvatarsArray(zfilter, zdefaultdisplayname);
+				}
+			);
 		}
-		zloaddefault = false;
 	} catch(ex) {
-		WTW.log('plugins:wtw-3dinternet:scripts-class_main.js-getMyAvatarList=' + ex.message);
+		WTW.log('plugins:wtw-3dinternet:scripts-class_main.js-hudLoginLoadAvatarsArray=' + ex.message);
 	}
-	return zloaddefault;
 }
 
 WTW_3DINTERNET.prototype.onMyAvatarSelect = function(zglobaluseravatarid, zuseravatarid, zavatarid) {
@@ -1419,6 +1366,9 @@ WTW_3DINTERNET.prototype.onMyAvatarSelect = function(zglobaluseravatarid, zusera
 				zloading = true;
 
 				WTW.openLoginHUD('Loading 3D Avatar');
+				/* load avatar from local copy */
+				WTW.getSavedAvatar('myavatar-' + dGet('wtw_tinstanceid').value, zglobaluseravatarid, zuseravatarid, zavatarid, true);
+				/* save avatar local copy to global server for future use and when visiting other servers */
 				var zrequest = {
 					'useravatarid': zuseravatarid,
 					'function':'setuseravatarglobalhash'
@@ -1451,21 +1401,16 @@ WTW_3DINTERNET.prototype.onMyAvatarSelect = function(zglobaluseravatarid, zusera
 										/* note serror would contain errors */
 										if (zresponse.globaluseravatarid != undefined) {
 											WTW.setCookie('globaluseravatarid', zresponse.globaluseravatarid, 365);
-											WTW.getSavedAvatar('myavatar-' + dGet('wtw_tinstanceid').value, zresponse.globaluseravatarid, zuseravatarid, zavatarid, true);
-										} else {
-											WTW.getSavedAvatar('myavatar-' + dGet('wtw_tinstanceid').value, zglobaluseravatarid, zuseravatarid, zavatarid, true);
 										}
 									}
 								);
 							} else {
-								WTW.closeLoginHUD();
 								WTW.log("Avatar Not Found.");
-								WTW.openLocalLogin('Select Avatar',.4,.9);
+								WTW.openLoginHUD('Select My Avatar');
 							}
 						} else {
-							WTW.closeLoginHUD();
 							WTW.log("Avatar Not Found.");
-							WTW.openLocalLogin('Select Avatar',.4,.9);
+							WTW.openLoginHUD('Select My Avatar');
 						}
 					}
 				);
@@ -1652,7 +1597,7 @@ WTW_3DINTERNET.prototype.resetActivityTimer = async function() {
 							var zavatarparts = zavatarscale.getChildren();
 							var zdone = false;
 							var zmaxvisibility = 1;
-							if (WTW.isMobile && zavatarname.indexOf('myavatar') > -1) {
+							if ((WTW.isMobile || WTW.sizeX < WTW.sizeY) && zavatarname.indexOf('myavatar') > -1) {
 								zmaxvisibility = .5;
 							}
 							for (var i=0; i<zavatarparts.length;i++) {
@@ -1817,40 +1762,40 @@ WTW_3DINTERNET.prototype.fadeAvatar = function(zdata) {
 			var zavatar = WTW.getMeshOrNodeByID('person-' + zdata.instanceid);
 			if (zavatar != null) {
 				if (zavatar.WTW != undefined) {
-					var zfade = 1;
-					if (WTW.isMobile && zavatarname.indexOf('myavatar') > -1) {
-						zfade = .5;
+					var zmaximumvisibility = 1;
+					if ((WTW.isMobile || WTW.sizeX < WTW.sizeY) && zavatarname.indexOf('myavatar') > -1) {
+						zmaximumvisibility = .5;
 					}
 					var ztimeincrement = 500;
 					if (zdata.fade != undefined) {
-						zfade = Number(zdata.fade);
+						zmaximumvisibility = Number(zdata.fade);
 					}
 					if (zavatar.WTW.fadetimer != null) {
 						window.clearInterval(zavatar.WTW.fadetimer);
 						zavatar.WTW.fadetimer = null;
 					}
-					if (zfade == 1) {
+					if (zmaximumvisibility == 1) {
 						ztimeincrement = 50;
 					}
 					zavatar.WTW.fadetimer  = window.setInterval(function(){
 						var zavatarscale = WTW.getMeshOrNodeByID('person-' + zdata.instanceid + '-scale');
 						if (zavatarscale != null) {
-							var zfaded = zfade;
+							var zmaxvisibility = zmaximumvisibility;
 							var zavatarparts = zavatarscale.getChildren();
 							var zdone = false;
 							if (wtw3dinternet.isBlocked(zdata.instanceid)) {
-								zfaded = 0;
-							} else if (wtw3dinternet.isBanned(zdata.instanceid) && zfaded == 1) {
-								zfaded = .5;
+								zmaxvisibility = 0;
+							} else if (wtw3dinternet.isBanned(zdata.instanceid) && zmaxvisibility == 1) {
+								zmaxvisibility = .5;
 							}
 							for (var i=0; i<zavatarparts.length;i++) {
 								if (zavatarparts[i] != null) {
-									if (zavatarparts[i].visibility > zfaded + .05) {
+									if (zavatarparts[i].visibility > zmaxvisibility + .05) {
 										zavatarparts[i].visibility -= .05;
-									} else if (zavatarparts[i].visibility < zfaded - .05) {
+									} else if (zavatarparts[i].visibility < zmaxvisibility - .05) {
 										zavatarparts[i].visibility += .05;
 									} else {
-										zavatarparts[i].visibility = zfaded;
+										zavatarparts[i].visibility = zmaxvisibility;
 										zdone = true;
 									}
 								}
@@ -1858,7 +1803,7 @@ WTW_3DINTERNET.prototype.fadeAvatar = function(zdata) {
 							if (zdone) {
 								for (var i=0; i<zavatarparts.length;i++) {
 									if (zavatarparts[i] != null) {
-										zavatarparts[i].visibility = zfaded;
+										zavatarparts[i].visibility = zmaxvisibility;
 									}
 								} 
 								window.clearInterval(zavatar.WTW.fadetimer);
@@ -1910,10 +1855,13 @@ WTW_3DINTERNET.prototype.toggleAdminSubMenu = function(zobj) {
 	try {
 		switch (zobj.id) {
 			case 'wtw_admin3dinternetmenu':
-				if ((dGet('wtw_3dinternetloginspage').style.display == 'none' || dGet('wtw_3dinternetloginspage').style.display == '')) {
+				if ((dGet('wtw_3dinternetloginspage').style.display == 'none' || dGet('wtw_3dinternetloginspage').style.display == '') && (dGet('wtw_3dinternetmultiplayerpage').style.display == 'none' || dGet('wtw_3dinternetmultiplayerpage').style.display == '') && (dGet('wtw_3dinternettemplatespage').style.display == 'none' || dGet('wtw_3dinternettemplatespage').style.display == '') && (dGet('wtw_3dinternetfranchisingpage').style.display == 'none' || dGet('wtw_3dinternetfranchisingpage').style.display == '')) {
 					WTW.openFullPageForm('fullpage','3D Internet','wtw_3dinternetloginspage');
 				} else {
 					WTW.hide('wtw_3dinternetloginspage');
+					WTW.hide('wtw_3dinternetmultiplayerpage');
+					WTW.hide('wtw_3dinternettemplatespage');
+					WTW.hide('wtw_3dinternetfranchisingpage');
 					WTW.closeFullPageForm();
 				}
 				break;
@@ -2122,7 +2070,7 @@ WTW_3DINTERNET.prototype.deleteUserAvatar = function(zglobaluseravatarid, zusera
 				function(zresponse2) {
 					zresponse2 = JSON.parse(zresponse2);
 					/* global user avatar - refresh list */
-					WTW.getMyAvatarList(zwidth, zheight, true);
+					WTW.hudLoginLoadAvatars();
 				}
 			);
 		}
@@ -2211,7 +2159,7 @@ WTW_3DINTERNET.prototype.hudLoginLogin = function(zlocal, zemail, zpassword, zre
 								zresponse = JSON.parse(zresponse);
 								/* continue if no errors */
 								if (WTW.globalLoginResponse(zresponse)) {
-									WTW.openLocalLogin('Select Avatar',.4,.9);
+									WTW.openLoginHUD('Select My Avatar');
 								}
 							}
 						);
@@ -2222,10 +2170,13 @@ WTW_3DINTERNET.prototype.hudLoginLogin = function(zlocal, zemail, zpassword, zre
 						dGet('wtw_tuseremail').value = '';
 						dGet('wtw_tdisplayname').value = '';
 						dGet('wtw_mainmenudisplayname').innerHTML = 'Login';
+						dGet('wtw_mainmenudisplaynamemobile').innerHTML = 'Login';
 						dGet('wtw_menudisplayname').innerHTML = 'Login';
 						dGet('wtw_tuserimageurl').value = '';
 						dGet('wtw_profileimagelg').src = '/content/system/images/menuprofilebig.png';
 						dGet('wtw_profileimagesm').src = '/content/system/images/menuprofile32.png';
+						dGet('wtw_profileimagesmmobile').src = '/content/system/images/menuprofile32.png';
+						WTW.show('wtw_mainmenudisplaynamemobile');
 
 						WTW.log("Login Error = " + serror);
 						var zinvalidlogin = WTW.getMeshOrNodeByID('hudlogin-invalidlogin');
@@ -2351,7 +2302,7 @@ WTW_3DINTERNET.prototype.hudLoginCreate = function(zlocal, zemail, zpassword, zp
 								zresponse = JSON.parse(zresponse);
 								/* continue if no errors */
 								if (WTW.globalLoginResponse(zresponse)) {
-									WTW.openLocalLogin('Select Avatar',.4,.9);
+									WTW.openLoginHUD('Select My Avatar');
 								}
 							}
 						);
@@ -2362,10 +2313,13 @@ WTW_3DINTERNET.prototype.hudLoginCreate = function(zlocal, zemail, zpassword, zp
 						dGet('wtw_tuseremail').value = '';
 						dGet('wtw_tdisplayname').value = '';
 						dGet('wtw_mainmenudisplayname').innerHTML = 'Login';
+						dGet('wtw_mainmenudisplaynamemobile').innerHTML = 'Login';
 						dGet('wtw_menudisplayname').innerHTML = 'Login';
 						dGet('wtw_tuserimageurl').value = '';
 						dGet('wtw_profileimagelg').src = '/content/system/images/menuprofilebig.png';
 						dGet('wtw_profileimagesm').src = '/content/system/images/menuprofile32.png';
+						dGet('wtw_profileimagesmmobile').src = '/content/system/images/menuprofile32.png';
+						WTW.show('wtw_mainmenudisplaynamemobile');
 
 						WTW.log("Login Error = " + serror);
 						var zinvalidlogin = WTW.getMeshOrNodeByID('hudlogin-invalidlogin');

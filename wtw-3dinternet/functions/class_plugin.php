@@ -23,9 +23,9 @@ class wtw3dinternet {
 		}
 	}	
 	
-	public $version = "1.2.0";
+	public $version = "1.2.1";
 	public $dbversion = "1.0.8";
-	public $versiondate = "2023-2-28";
+	public $versiondate = "2023-9-5";
 	
 	public function __call ($method, $arguments)  {
 		if (isset($this->$method)) {
@@ -127,7 +127,7 @@ class wtw3dinternet {
 			$wtwplugins->addScript('wtw-3dinternet-admin', null, WTW_3DINTERNET_URL . "/scripts/admin.js");
 			$wtwplugins->addScript('wtw-3dinternet-move', null, WTW_3DINTERNET_URL . "/scripts/move.js");
 			$wtwplugins->addScript('wtw-3dinternet-chat', null, WTW_3DINTERNET_URL . "/scripts/chat.js");
-			$wtwplugins->addScript('wtw-3dinternet-recordrtc', null, "/core/scripts/engine/recordrtc.js");
+			$wtwplugins->addScript('wtw-3dinternet-recordrtc', null, "/core/scripts/engine/socket.io/recordrtc.min.js");
 			$wtwplugins->addScript('wtw-3dinternet-voicechat', null, WTW_3DINTERNET_URL . "/scripts/voicechat.js");
 			
 			/* browse menu (bottom) settings Menu Items */
@@ -155,16 +155,19 @@ class wtw3dinternet {
 			$wtwplugins->addScriptFunction("adminmenuitemselected", "wtw3dinternet.adminMenuItemSelected(zobj);");
 			$wtwplugins->addScriptFunction("toggleadminsubmenu", "wtw3dinternet.toggleAdminSubMenu(zobj);");
 			$wtwplugins->addScriptFunction("closemenus", "wtw3dinternet.closeMenus(zmenuid);");
-			$wtwplugins->addScriptFunction("beforeunload", "wtw3dinternet.beforeUnloadVoiceChat();");
-			$wtwplugins->addScriptFunction("beforeunload", "wtw3dinternet.beforeUnloadChat();");
+			$wtwplugins->addScriptFunction("beforeunload", "wtw3dinternet.beforeUnloadAdmin();");
 			$wtwplugins->addScriptFunction("beforeunload", "wtw3dinternet.beforeUnloadMove();");
+			$wtwplugins->addScriptFunction("beforeunload", "wtw3dinternet.beforeUnloadChat();");
+			$wtwplugins->addScriptFunction("beforeunload", "wtw3dinternet.beforeUnloadVoiceChat();");
 			
 			$wtwplugins->addScriptFunction("onmessage", "wtw3dinternet.onMessage(zevent);");
-			$wtwplugins->addScriptFunction("onclick", "wtw3dinternet.onClick(zpickedname);");
+			$wtwplugins->addScriptFunction("inputclick", "wtw3dinternet.inputClick(zpickedname);");
 			$wtwplugins->addScriptFunction("hudloginclick", "wtw3dinternet.hudLoginClick(zmoldname);");
 			$wtwplugins->addScriptFunction("openlocallogin", "wtw3dinternet.openLocalLogin(zitem, zwidth, zheight);");
 			$wtwplugins->addScriptFunction("hudloginlogin", "wtw3dinternet.hudLoginLogin(zlocal, zemail, zpassword, zremembercheck);");
 			$wtwplugins->addScriptFunction("hudlogincreate", "wtw3dinternet.hudLoginCreate(zlocal, zemail, zpassword, zpassword2);");
+			$wtwplugins->addScriptFunction("hudloginloadavatarsarray", "wtw3dinternet.hudLoginLoadAvatarsArray(zfilter, zdefaultdisplayname);");
+
 			$wtwplugins->addScriptFunction("onmicrophonegrantedonmessage", "wtw3dinternet.onMicrophoneGrantedOnMessage(zevent, zrecordbuffer);");
 			$wtwplugins->addScriptFunction("onmicvolumechange", "wtw3dinternet.onMicVolumeChange(zvolume);");
 			$wtwplugins->addScriptFunction("togglemicmute", "wtw3dinternet.toggleMicMute();");
@@ -188,7 +191,6 @@ class wtw3dinternet {
 			$wtwplugins->addScriptFunction("resetactivitytimer", "wtw3dinternet.resetActivityTimer();");
 			$wtwplugins->addScriptFunction("loadloginsettings", "wtw3dinternet.loadLoginSettings(zloaddefault);");
 
-			$wtwplugins->addScriptFunction("getmyavatarlist", "wtw3dinternet.getMyAvatarList(zloaddefault, zeditmode);");
 			$wtwplugins->addScriptFunction("onmyavatarselect", "wtw3dinternet.onMyAvatarSelect(zglobaluseravatarid, zuseravatarid, zavatarid);");
 			$wtwplugins->addScriptFunction("getsavedavatar", "wtw3dinternet.getSavedAvatar(zglobaluseravatarid, zinstanceid, zavatarname, zsendrefresh);");
 			$wtwplugins->addScriptFunction("savedavatarretrieved", "wtw3dinternet.savedAvatarRetrieved(zavatarname, zsendrefresh);");
@@ -268,6 +270,11 @@ class wtw3dinternet {
 			
 			/* multiplayer setings conects to the multiplayer/chat hub server */
 			$zformdata .= "			<div class=\"wtw-controlpaneldiv\">\r\n";
+			$zformdata .= "				<div class=\"wtw-controlpaneltitlediv\">WalkTheWeb Broadcasts</div>\r\n";
+
+			$zformdata .= "				<div id=\"wtw3dinternet_broadcaststext\" class=\"wtw-disabledlabel\" style=\"float:right;\"></div>";
+
+			$zformdata .= "				<label class=\"wtw-switch\"><input id=\"wtw3dinternet_enablebroadcasts\" type=\"checkbox\" onclick=\"wtw3dinternet.changeSwitch(this);\"><span class=\"wtw-slider wtw-round\"></span></label><div id=\"wtw3dinternet_enablebroadcaststext\" class=\"wtw-disabledlabel\">Broadcasts Disabled</div><div style=\"clear:both;\"></div><br />\r\n";
 			$zformdata .= "				<div class=\"wtw-controlpaneltitlediv\">Multiplayer Settings</div>\r\n";
 
 			$zformdata .= "				<div id=\"wtw3dinternet_multiplayertext\" class=\"wtw-disabledlabel\" style=\"float:right;\"></div>";
@@ -538,7 +545,7 @@ class wtw3dinternet {
 						  `deleted` int(11) DEFAULT '0',
 						  PRIMARY KEY (`useravatarid`),
 						  UNIQUE KEY `".WTW_3DINTERNET_PREFIX."useravatarid_UNIQUE` (`useravatarid`)
-						) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+						) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 					");
 					$wtwplugins->deltaCreateTable("
 						CREATE TABLE `".WTW_3DINTERNET_PREFIX."useravatarcolors` (
@@ -562,7 +569,7 @@ class wtw3dinternet {
 						  `deleted` int(11) DEFAULT '0',
 						  PRIMARY KEY (`avatarpartid`),
 						  UNIQUE KEY `".WTW_3DINTERNET_PREFIX."useravatarcolorid_UNIQUE` (`avatarpartid`)
-						) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+						) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 					");
 					$wtwplugins->deltaCreateTable("
 						CREATE TABLE `".WTW_3DINTERNET_PREFIX."useravataranimations` (
@@ -597,7 +604,7 @@ class wtw3dinternet {
 						  PRIMARY KEY (`useravataranimationid`),
 						  UNIQUE KEY `".WTW_3DINTERNET_PREFIX."useravataranimationid_UNIQUE` (`useravataranimationid`),
 						  KEY `".WTW_3DINTERNET_PREFIX."idx_useravataranimations` (`avataranimationid`,`useravatarid`,`animationevent`)
-						) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+						) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 					");
 					$wtwplugins->deltaCreateTable("
 						CREATE TABLE `".WTW_3DINTERNET_PREFIX."blockedinstances` (
@@ -622,7 +629,7 @@ class wtw3dinternet {
 						  UNIQUE KEY `".WTW_3DINTERNET_PREFIX."blockedinstanceid_UNIQUE` (`blockedinstanceid`),
 						  KEY `".WTW_3DINTERNET_PREFIX."idx_blockedinstances` 
 						  (`blockedinstanceid`,`instanceid`,`userid`)
-						) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+						) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 					");
 					
 					/* updated 3.4.5 - set initial values for new fields */

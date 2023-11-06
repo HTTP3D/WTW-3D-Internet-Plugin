@@ -167,17 +167,7 @@ class wtw_3dinternet_downloads {
 				/* determine the new local path for uploaded files associated with this download */
 				$znewfolder = $wtwhandlers->contentpath.'/uploads/'.$zwebtypes.'/'.$znewwebid;
 				$znewurl = $wtwhandlers->contenturl.'/uploads/'.$zwebtypes.'/'.$znewwebid;
-				if (!file_exists($znewfolder)) {
-					umask(0);
-					mkdir($znewfolder, octdec(wtw_chmod), true);
-					chmod($znewfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewfolder);
 				if (isset($zrequest->users)) {
 					$this->downloadUsers(json_encode($zrequest->users), $zusertoken);
 				}
@@ -377,17 +367,7 @@ class wtw_3dinternet_downloads {
 				$znewurl = $wtwhandlers->contenturl.'/uploads/'.$zwebtypes.'/'.$znewwebid;
 				$zresponse['newfolder'] = $znewfolder;
 				$zresponse['newurl'] = $znewurl;
-				if (!file_exists($znewfolder)) {
-					umask(0);
-					mkdir($znewfolder, octdec(wtw_chmod), true);
-					chmod($znewfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewfolder);
 			}
 		} catch (Exception $e) {
 			$wtwhandlers->serror("plugins:wtw-3dinternet:functions-class_downloads.php-downloadWebProgress=".$e->getMessage());
@@ -474,17 +454,7 @@ class wtw_3dinternet_downloads {
 				/* determine the new local path for uploaded files associated with this download */
 				$znewfolder = $wtwhandlers->contentpath.'/uploads/'.$zwebtypes.'/'.$zwebid;
 				$znewurl = $wtwhandlers->contenturl.'/uploads/'.$zwebtypes.'/'.$zwebid;
-				if (!file_exists($znewfolder)) {
-					umask(0);
-					mkdir($znewfolder, octdec(wtw_chmod), true);
-					chmod($znewfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewfolder);
 				
 				/* process all users associated to this download (for your reference) */
 				foreach ($zrequest->users as $zuser) {
@@ -558,17 +528,7 @@ class wtw_3dinternet_downloads {
 					
 					$znewuploadsfolder = $znewfolder.'/uploads';
 					$znewuploadsurl = $znewurl.'/uploads';
-					if (!file_exists($znewuploadsfolder)) {
-						umask(0);
-						mkdir($znewuploadsfolder, octdec(wtw_chmod), true);
-						chmod($znewuploadsfolder, octdec(wtw_chmod));
-						if (defined('wtw_umask')) {
-							/* reset umask */
-							if (wtw_umask != '0') {
-								umask(octdec(wtw_umask));
-							}
-						}
-					}
+					$wtwhandlers->verifyFolderExists($znewuploadsfolder);
 					if (!empty($zupload->filepath)) {
 						try {
 							/* check file types for valid downloads */
@@ -751,6 +711,50 @@ class wtw_3dinternet_downloads {
 									waterbumpid='".$zrequest->waterbumpid."',
 									textureid='".$znewtextureid."',
 									skydomeid='".$znewskydomeid."',
+									sceneambientcolor='".$zrequest->sceneambientcolor."',
+									sceneclearcolor='".$zrequest->sceneclearcolor."',
+									sceneuseclonedmeshmap=".$wtwhandlers->checkNumber($zrequest->sceneuseclonedmeshmap,1).",
+									sceneblockmaterialdirtymechanism=".$wtwhandlers->checkNumber($zrequest->sceneblockmaterialdirtymechanism,1).",
+									scenefogenabled=".$wtwhandlers->checkNumber($zrequest->scenefogenabled,0).",
+									scenefogmode='".$zrequest->scenefogmode."',
+									scenefogdensity=".$wtwhandlers->checkNumber($zrequest->scenefogdensity,.01).",
+									scenefogstart=".$wtwhandlers->checkNumber($zrequest->scenefogstart,20).",
+									scenefogend=".$wtwhandlers->checkNumber($zrequest->scenefogend,60).",
+									scenefogcolor='".$zrequest->scenefogcolor."',
+									sundirectionalintensity=".$wtwhandlers->checkNumber($zrequest->sundirectionalintensity,1).",
+									sundiffusecolor='".$zrequest->sundiffusecolor."',
+									sunspecularcolor='".$zrequest->sunspecularcolor."',
+									sungroundcolor='".$zrequest->sungroundcolor."',
+									sundirectionx=".$wtwhandlers->checkNumber($zrequest->sundirectionx,999).",
+									sundirectiony=".$wtwhandlers->checkNumber($zrequest->sundirectiony,-999).",
+									sundirectionz=".$wtwhandlers->checkNumber($zrequest->sundirectionz,999).",
+									backlightintensity=".$wtwhandlers->checkNumber($zrequest->backlightintensity,.5).",
+									backlightdirectionx=".$wtwhandlers->checkNumber($zrequest->backlightdirectionx,-999).",
+									backlightdirectiony=".$wtwhandlers->checkNumber($zrequest->backlightdirectiony,999).",
+									backlightdirectionz=".$wtwhandlers->checkNumber($zrequest->backlightdirectionz,-999).",
+									backlightdiffusecolor='".$zrequest->backlightdiffusecolor."',
+									backlightspecularcolor='".$zrequest->backlightspecularcolor."',
+									skytype='".$zrequest->skytype."',
+									skysize=".$wtwhandlers->checkNumber($zrequest->skysize,5000).",
+									skyboxfolder='".$zrequest->skyboxfolder."',
+									skyboxfile='".$zrequest->skyboxfile."',
+									skyboximageleft='".$zrequest->skyboximageleft."',
+									skyboximageup='".$zrequest->skyboximageup."',
+									skyboximagefront='".$zrequest->skyboximagefront."',
+									skyboximageright='".$zrequest->skyboximageright."',
+									skyboximagedown='".$zrequest->skyboximagedown."',
+									skyboximageback='".$zrequest->skyboximageback."',
+									skypositionoffsetx=".$wtwhandlers->checkNumber($zrequest->skypositionoffsetx,0).",
+									skypositionoffsety=".$wtwhandlers->checkNumber($zrequest->skypositionoffsety,0).",
+									skypositionoffsetz=".$wtwhandlers->checkNumber($zrequest->skypositionoffsetz,0).",
+									skyboxmicrosurface=".$wtwhandlers->checkNumber($zrequest->skyboxmicrosurface,0).",
+									skyboxpbr=".$wtwhandlers->checkNumber($zrequest->skyboxpbr,0).",
+									skyboxasenvironmenttexture=".$wtwhandlers->checkNumber($zrequest->skyboxasenvironmenttexture,0).",
+									skyboxblur=".$wtwhandlers->checkNumber($zrequest->skyboxblur,0).",
+									skyboxdiffusecolor='".$zrequest->skyboxdiffusecolor."',
+									skyboxspecularcolor='".$zrequest->skyboxspecularcolor."',
+									skyboxambientcolor='".$zrequest->skyboxambientcolor."',
+									skyboxemissivecolor='".$zrequest->skyboxemissivecolor."',
 									skyinclination=".$zrequest->skyinclination.",
 									skyluminance=".$zrequest->skyluminance.",
 									skyazimuth=".$zrequest->skyazimuth.",
@@ -819,6 +823,50 @@ class wtw_3dinternet_downloads {
 									waterbumpid,
 									textureid,
 									skydomeid,
+									sceneambientcolor,
+									sceneclearcolor,
+									sceneuseclonedmeshmap,
+									sceneblockmaterialdirtymechanism,
+									scenefogenabled,
+									scenefogmode,
+									scenefogdensity,
+									scenefogstart,
+									scenefogend,
+									scenefogcolor,
+									sundirectionalintensity,
+									sundiffusecolor,
+									sunspecularcolor,
+									sungroundcolor,
+									sundirectionx,
+									sundirectiony,
+									sundirectionz,
+									backlightintensity,
+									backlightdirectionx,
+									backlightdirectiony,
+									backlightdirectionz,
+									backlightdiffusecolor,
+									backlightspecularcolor,
+									skytype,
+									skysize,
+									skyboxfolder,
+									skyboxfile,
+									skyboximageleft,
+									skyboximageup,
+									skyboximagefront,
+									skyboximageright,
+									skyboximagedown,
+									skyboximageback,
+									skypositionoffsetx,
+									skypositionoffsety,
+									skypositionoffsetz,
+									skyboxmicrosurface,
+									skyboxpbr,
+									skyboxasenvironmenttexture,
+									skyboxblur,
+									skyboxdiffusecolor,
+									skyboxspecularcolor,
+									skyboxambientcolor,
+									skyboxemissivecolor,
 									skyinclination,
 									skyluminance,
 									skyazimuth,
@@ -884,6 +932,50 @@ class wtw_3dinternet_downloads {
 									'".$zrequest->waterbumpid."',
 									'".$znewtextureid."',
 									'".$znewskydomeid."',
+									'".$zrequest->sceneambientcolor."',
+									'".$zrequest->sceneclearcolor."',
+									".$wtwhandlers->checkNumber($zrequest->sceneuseclonedmeshmap,1).",
+									".$wtwhandlers->checkNumber($zrequest->sceneblockmaterialdirtymechanism,1).",
+									".$wtwhandlers->checkNumber($zrequest->scenefogenabled,0).",
+									'".$zrequest->scenefogmode."',
+									".$wtwhandlers->checkNumber($zrequest->scenefogdensity,.01).",
+									".$wtwhandlers->checkNumber($zrequest->scenefogstart,20).",
+									".$wtwhandlers->checkNumber($zrequest->scenefogend,60).",
+									'".$zrequest->scenefogcolor."',
+									".$wtwhandlers->checkNumber($zrequest->sundirectionalintensity,1).",
+									'".$zrequest->sundiffusecolor."',
+									'".$zrequest->sunspecularcolor."',
+									'".$zrequest->sungroundcolor."',
+									".$wtwhandlers->checkNumber($zrequest->sundirectionx,999).",
+									".$wtwhandlers->checkNumber($zrequest->sundirectiony,-999).",
+									".$wtwhandlers->checkNumber($zrequest->sundirectionz,999).",
+									".$wtwhandlers->checkNumber($zrequest->backlightintensity,.5).",
+									".$wtwhandlers->checkNumber($zrequest->backlightdirectionx,-999).",
+									".$wtwhandlers->checkNumber($zrequest->backlightdirectiony,999).",
+									".$wtwhandlers->checkNumber($zrequest->backlightdirectionz,-999).",
+									'".$zrequest->backlightdiffusecolor."',
+									'".$zrequest->backlightspecularcolor."',
+									'".$zrequest->skytype."',
+									".$wtwhandlers->checkNumber($zrequest->skysize,5000).",
+									'".$zrequest->skyboxfolder."',
+									'".$zrequest->skyboxfile."',
+									'".$zrequest->skyboximageleft."',
+									'".$zrequest->skyboximageup."',
+									'".$zrequest->skyboximagefront."',
+									'".$zrequest->skyboximageright."',
+									'".$zrequest->skyboximagedown."',
+									'".$zrequest->skyboximageback."',
+									".$wtwhandlers->checkNumber($zrequest->skypositionoffsetx,0).",
+									".$wtwhandlers->checkNumber($zrequest->skypositionoffsety,0).",
+									".$wtwhandlers->checkNumber($zrequest->skypositionoffsetz,0).",
+									".$wtwhandlers->checkNumber($zrequest->skyboxmicrosurface,0).",
+									".$wtwhandlers->checkNumber($zrequest->skyboxpbr,0).",
+									".$wtwhandlers->checkNumber($zrequest->skyboxasenvironmenttexture,0).",
+									".$wtwhandlers->checkNumber($zrequest->skyboxblur,0).",
+									'".$zrequest->skyboxdiffusecolor."',
+									'".$zrequest->skyboxspecularcolor."',
+									'".$zrequest->skyboxambientcolor."',
+									'".$zrequest->skyboxemissivecolor."',
 									".$zrequest->skyinclination.",
 									".$zrequest->skyluminance.",
 									".$zrequest->skyazimuth.",
@@ -1141,30 +1233,10 @@ class wtw_3dinternet_downloads {
 					$znewanimationicon = '';
 					
 					$znewobjectfolder = $znewfolder.'/avataranimations';
-					if (!file_exists($znewobjectfolder)) {
-						umask(0);
-						mkdir($znewobjectfolder, octdec(wtw_chmod), true);
-						chmod($znewobjectfolder, octdec(wtw_chmod));
-						if (defined('wtw_umask')) {
-							/* reset umask */
-							if (wtw_umask != '0') {
-								umask(octdec(wtw_umask));
-							}
-						}
-					}
+					$wtwhandlers->verifyFolderExists($znewobjectfolder);
 					if (!empty($zavataranimation->objectfolder) && !empty($zavataranimation->objectfile)) {
 						$znewobjectfolder = $znewfolder.'/avataranimations/'.str_replace(".obj","",str_replace(".gltf","",str_replace(".glb","",str_replace(".babylon","",$zavataranimation->objectfile))));
-						if (!file_exists($znewobjectfolder)) {
-							umask(0);
-							mkdir($znewobjectfolder, octdec(wtw_chmod), true);
-							chmod($znewobjectfolder, octdec(wtw_chmod));
-							if (defined('wtw_umask')) {
-								/* reset umask */
-								if (wtw_umask != '0') {
-									umask(octdec(wtw_umask));
-								}
-							}
-						}
+						$wtwhandlers->verifyFolderExists($znewobjectfolder);
 						$zfileext = strtolower(pathinfo($znewobjectfolder."/".$zavataranimation->objectfile, PATHINFO_EXTENSION));
 						if ($zfileext == 'babylon') {
 							try {
@@ -1298,6 +1370,9 @@ class wtw_3dinternet_downloads {
 								attachmoldid='".$zactionzone->attachmoldid."',
 								loadactionzoneid='".$zactionzone->loadactionzoneid."',
 								parentactionzoneid='".$zactionzone->parentactionzoneid."',
+								teleportwebid='".$zactionzone->teleportwebid."',
+								teleportwebtype='".$zactionzone->teleportwebtype."',
+								spawnactionzoneid='".$zactionzone->spawnactionzoneid."',
 								actionzonename='".$zactionzone->actionzonename."',
 								actionzonetype='".$zactionzone->actionzonetype."',
 								actionzoneshape='".$zactionzone->actionzoneshape."',
@@ -1346,6 +1421,9 @@ class wtw_3dinternet_downloads {
 								attachmoldid,
 								loadactionzoneid,
 								parentactionzoneid,
+								teleportwebid,
+								teleportwebtype,
+								spawnactionzoneid,
 								actionzonename,
 								actionzonetype,
 								actionzoneshape,
@@ -1388,6 +1466,9 @@ class wtw_3dinternet_downloads {
 								'".$zactionzone->attachmoldid."',
 								'".$zactionzone->loadactionzoneid."',
 								'".$zactionzone->parentactionzoneid."',
+								'".$zactionzone->teleportwebid."',
+								'".$zactionzone->teleportwebtype."',
+								'".$zactionzone->spawnactionzoneid."',
 								'".$zactionzone->actionzonename."',
 								'".$zactionzone->actionzonetype."',
 								'".$zactionzone->actionzoneshape."',
@@ -1498,11 +1579,13 @@ class wtw_3dinternet_downloads {
 					/* get new foreign keys */
 					$znewloadactionzoneid = $wtwhandlers->getIDByPastID('actionzones', 'actionzoneid', 'pastactionzoneid', $zrow["loadactionzoneid"]);
 					$znewparentactionzoneid = $wtwhandlers->getIDByPastID('actionzones', 'actionzoneid', 'pastactionzoneid', $zrow["parentactionzoneid"]);
+					$znewspawnactionzoneid = $wtwhandlers->getIDByPastID('actionzones', 'actionzoneid', 'pastactionzoneid', $zrow["spawnactionzoneid"]);
 
 					$wtwhandlers->query("
 						update ".wtw_tableprefix."actionzones
 						set loadactionzoneid='".$znewloadactionzoneid."',
-							parentactionzoneid='".$znewparentactionzoneid."'
+							parentactionzoneid='".$znewparentactionzoneid."',
+							spawnactionzoneid='".$znewspawnactionzoneid."'
 						where actionzoneid='".$zrow["actionzoneid"]."'
 						limit 1;");
 				}
@@ -1515,17 +1598,7 @@ class wtw_3dinternet_downloads {
 					$znewscriptid = $wtwhandlers->getNewKey('scripts', "scriptid", $zscript->scriptid);
 					
 					$znewscriptfolder = $znewfolder.'/scripts';
-					if (!file_exists($znewscriptfolder)) {
-						umask(0);
-						mkdir($znewscriptfolder, octdec(wtw_chmod), true);
-						chmod($znewscriptfolder, octdec(wtw_chmod));
-						if (defined('wtw_umask')) {
-							/* reset umask */
-							if (wtw_umask != '0') {
-								umask(octdec(wtw_umask));
-							}
-						}
-					}
+					$wtwhandlers->verifyFolderExists($znewscriptfolder);
 					if (!empty($zscript->scriptpath)) {
 						$zfileext = strtolower(pathinfo($znewscriptfolder."/".$zscript->scriptfilename, PATHINFO_EXTENSION));
 						if ($zfileext == 'js') {
@@ -1827,23 +1900,10 @@ class wtw_3dinternet_downloads {
 					$i += 1;
 					
 					if ($wtwhandlers->hasValue($zuploadobject->uploadobjectid)) {
-						umask(0);
 						$znewobjectfolder = $znewfolder.'/objects';
-						if (!file_exists($znewobjectfolder)) {
-							mkdir($znewobjectfolder, octdec(wtw_chmod), true);
-							chmod($znewobjectfolder, octdec(wtw_chmod));
-						}
+						$wtwhandlers->verifyFolderExists($znewobjectfolder);
 						$znewobjectfolder = $znewfolder.'/objects/'.str_replace(".obj","",str_replace(".gltf","",str_replace(".glb","",str_replace(".babylon","",$zuploadobject->objectfile))));
-						if (!file_exists($znewobjectfolder)) {
-							mkdir($znewobjectfolder, octdec(wtw_chmod), true);
-							chmod($znewobjectfolder, octdec(wtw_chmod));
-						}
-						if (defined('wtw_umask')) {
-							/* reset umask */
-							if (wtw_umask != '0') {
-								umask(octdec(wtw_umask));
-							}
-						}
+						$wtwhandlers->verifyFolderExists($znewobjectfolder);
 						$znewobjecturl = $znewurl.'/objects/'.str_replace(".obj","",str_replace(".gltf","",str_replace(".glb","",str_replace(".babylon","",$zuploadobject->objectfile))))."/";
 						
 						/* get new foreign keys */
@@ -2913,17 +2973,7 @@ class wtw_3dinternet_downloads {
 				
 				$znewuploadsfolder = $znewfolder.'/uploads';
 				$znewuploadsurl = $znewurl.'/uploads';
-				if (!file_exists($znewuploadsfolder)) {
-					umask(0);
-					mkdir($znewuploadsfolder, octdec(wtw_chmod), true);
-					chmod($znewuploadsfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewuploadsfolder);
 				if (!empty($zupload->filepath)) {
 					try {
 						/* check file types for valid downloads */
@@ -3148,6 +3198,50 @@ class wtw_3dinternet_downloads {
 							waterbumpid,
 							textureid,
 							skydomeid,
+							sceneambientcolor,
+							sceneclearcolor,
+							sceneuseclonedmeshmap,
+							sceneblockmaterialdirtymechanism,
+							scenefogenabled,
+							scenefogmode,
+							scenefogdensity,
+							scenefogstart,
+							scenefogend,
+							scenefogcolor,
+							sundirectionalintensity,
+							sundiffusecolor,
+							sunspecularcolor,
+							sungroundcolor,
+							sundirectionx,
+							sundirectiony,
+							sundirectionz,
+							backlightintensity,
+							backlightdirectionx,
+							backlightdirectiony,
+							backlightdirectionz,
+							backlightdiffusecolor,
+							backlightspecularcolor,
+							skytype,
+							skysize,
+							skyboxfolder,
+							skyboxfile,
+							skyboximageleft,
+							skyboximageup,
+							skyboximagefront,
+							skyboximageright,
+							skyboximagedown,
+							skyboximageback,
+							skypositionoffsetx,
+							skypositionoffsety,
+							skypositionoffsetz,
+							skyboxmicrosurface,
+							skyboxpbr,
+							skyboxasenvironmenttexture,
+							skyboxblur,
+							skyboxdiffusecolor,
+							skyboxspecularcolor,
+							skyboxambientcolor,
+							skyboxemissivecolor,
 							skyinclination,
 							skyluminance,
 							skyazimuth,
@@ -3215,6 +3309,50 @@ class wtw_3dinternet_downloads {
 							'".$zrequest->waterbumpid."',
 							'".$znewtextureid."',
 							'".$znewskydomeid."',
+							'".$zrequest->sceneambientcolor."',
+							'".$zrequest->sceneclearcolor."',
+							".$wtwhandlers->checkNumber($zrequest->sceneuseclonedmeshmap,1).",
+							".$wtwhandlers->checkNumber($zrequest->sceneblockmaterialdirtymechanism,1).",
+							".$wtwhandlers->checkNumber($zrequest->scenefogenabled,0).",
+							'".$zrequest->scenefogmode."',
+							".$wtwhandlers->checkNumber($zrequest->scenefogdensity,.01).",
+							".$wtwhandlers->checkNumber($zrequest->scenefogstart,20).",
+							".$wtwhandlers->checkNumber($zrequest->scenefogend,60).",
+							'".$zrequest->scenefogcolor."',
+							".$wtwhandlers->checkNumber($zrequest->sundirectionalintensity,1).",
+							'".$zrequest->sundiffusecolor."',
+							'".$zrequest->sunspecularcolor."',
+							'".$zrequest->sungroundcolor."',
+							".$wtwhandlers->checkNumber($zrequest->sundirectionx,999).",
+							".$wtwhandlers->checkNumber($zrequest->sundirectiony,-999).",
+							".$wtwhandlers->checkNumber($zrequest->sundirectionz,999).",
+							".$wtwhandlers->checkNumber($zrequest->backlightintensity,.5).",
+							".$wtwhandlers->checkNumber($zrequest->backlightdirectionx,-999).",
+							".$wtwhandlers->checkNumber($zrequest->backlightdirectiony,999).",
+							".$wtwhandlers->checkNumber($zrequest->backlightdirectionz,-999).",
+							'".$zrequest->backlightdiffusecolor."',
+							'".$zrequest->backlightspecularcolor."',
+							'".$zrequest->skytype."',
+							".$wtwhandlers->checkNumber($zrequest->skysize,5000).",
+							'".$zrequest->skyboxfolder."',
+							'".$zrequest->skyboxfile."',
+							'".$zrequest->skyboximageleft."',
+							'".$zrequest->skyboximageup."',
+							'".$zrequest->skyboximagefront."',
+							'".$zrequest->skyboximageright."',
+							'".$zrequest->skyboximagedown."',
+							'".$zrequest->skyboximageback."',
+							".$wtwhandlers->checkNumber($zrequest->skypositionoffsetx,0).",
+							".$wtwhandlers->checkNumber($zrequest->skypositionoffsety,0).",
+							".$wtwhandlers->checkNumber($zrequest->skypositionoffsetz,0).",
+							".$wtwhandlers->checkNumber($zrequest->skyboxmicrosurface,0).",
+							".$wtwhandlers->checkNumber($zrequest->skyboxpbr,0).",
+							".$wtwhandlers->checkNumber($zrequest->skyboxasenvironmenttexture,0).",
+							".$wtwhandlers->checkNumber($zrequest->skyboxblur,0).",
+							'".$zrequest->skyboxdiffusecolor."',
+							'".$zrequest->skyboxspecularcolor."',
+							'".$zrequest->skyboxambientcolor."',
+							'".$zrequest->skyboxemissivecolor."',
 							".$zrequest->skyinclination.",
 							".$zrequest->skyluminance.",
 							".$zrequest->skyazimuth.",
@@ -3505,30 +3643,10 @@ class wtw_3dinternet_downloads {
 				$znewanimationicon = '';
 				
 				$znewobjectfolder = $znewfolder.'/avataranimations';
-				if (!file_exists($znewobjectfolder)) {
-					umask(0);
-					mkdir($znewobjectfolder, octdec(wtw_chmod), true);
-					chmod($znewobjectfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewobjectfolder);
 				if (!empty($zavataranimation->objectfolder) && !empty($zavataranimation->objectfile)) {
 					$znewobjectfolder = $znewfolder.'/avataranimations/'.str_replace(".obj","",str_replace(".gltf","",str_replace(".glb","",str_replace(".babylon","",$zavataranimation->objectfile))));
-					if (!file_exists($znewobjectfolder)) {
-						umask(0);
-						mkdir($znewobjectfolder, octdec(wtw_chmod), true);
-						chmod($znewobjectfolder, octdec(wtw_chmod));
-						if (defined('wtw_umask')) {
-							/* reset umask */
-							if (wtw_umask != '0') {
-								umask(octdec(wtw_umask));
-							}
-						}
-					}
+					$wtwhandlers->verifyFolderExists($znewobjectfolder);
 					$zfileext = strtolower(pathinfo($znewobjectfolder."/".$zavataranimation->objectfile, PATHINFO_EXTENSION));
 					if ($zfileext == 'babylon') {
 						try {
@@ -3700,6 +3818,9 @@ class wtw_3dinternet_downloads {
 						attachmoldid,
 						loadactionzoneid,
 						parentactionzoneid,
+						teleportwebid,
+						teleportwebtype,
+						spawnactionzoneid,
 						actionzonename,
 						actionzonetype,
 						actionzoneshape,
@@ -3742,6 +3863,9 @@ class wtw_3dinternet_downloads {
 						'".$zactionzone->attachmoldid."',
 						'".$zactionzone->loadactionzoneid."',
 						'".$zactionzone->parentactionzoneid."',
+						'".$zactionzone->teleportwebid."',
+						'".$zactionzone->teleportwebtype."',
+						'".$zactionzone->spawnactionzoneid."',
 						'".$zactionzone->actionzonename."',
 						'".$zactionzone->actionzonetype."',
 						'".$zactionzone->actionzoneshape."',
@@ -3826,11 +3950,13 @@ class wtw_3dinternet_downloads {
 				/* get new foreign keys */
 				$znewloadactionzoneid = $wtwhandlers->getIDByPastID('actionzones', 'actionzoneid', 'pastactionzoneid', $zrow["loadactionzoneid"]);
 				$znewparentactionzoneid = $wtwhandlers->getIDByPastID('actionzones', 'actionzoneid', 'pastactionzoneid', $zrow["parentactionzoneid"]);
+				$znewspawnactionzoneid = $wtwhandlers->getIDByPastID('actionzones', 'actionzoneid', 'pastactionzoneid', $zrow["spawnactionzoneid"]);
 
 				$wtwhandlers->query("
 					update ".wtw_tableprefix."actionzones
 					set loadactionzoneid='".$znewloadactionzoneid."',
-						parentactionzoneid='".$znewparentactionzoneid."'
+						parentactionzoneid='".$znewparentactionzoneid."',
+						spawnactionzoneid='".$znewspawnactionzoneid."'
 					where actionzoneid='".$zrow["actionzoneid"]."'
 					limit 1;");
 			}
@@ -3885,17 +4011,7 @@ class wtw_3dinternet_downloads {
 				$znewscriptid = $wtwhandlers->getNewKey('scripts', "scriptid", $zscript->scriptid);
 				
 				$znewscriptfolder = $znewfolder.'/scripts';
-				if (!file_exists($znewscriptfolder)) {
-					umask(0);
-					mkdir($znewscriptfolder, octdec(wtw_chmod), true);
-					chmod($znewscriptfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewscriptfolder);
 				if (!empty($zscript->scriptpath)) {
 					$zfileext = strtolower(pathinfo($znewscriptfolder."/".$zscript->scriptfilename, PATHINFO_EXTENSION));
 					if ($zfileext == 'js') {
@@ -4284,23 +4400,10 @@ class wtw_3dinternet_downloads {
 				$i += 1;
 
 				if ($wtwhandlers->hasValue($zuploadobject->uploadobjectid)) {
-					umask(0);
 					$znewobjectfolder = $znewfolder.'/objects';
-					if (!file_exists($znewobjectfolder)) {
-						mkdir($znewobjectfolder, octdec(wtw_chmod), true);
-						chmod($znewobjectfolder, octdec(wtw_chmod));
-					}
+					$wtwhandlers->verifyFolderExists($znewobjectfolder);
 					$znewobjectfolder = $znewfolder.'/objects/'.str_replace(".obj","",str_replace(".gltf","",str_replace(".glb","",str_replace(".babylon","",$zuploadobject->objectfile))));
-					if (!file_exists($znewobjectfolder)) {
-						mkdir($znewobjectfolder, octdec(wtw_chmod), true);
-						chmod($znewobjectfolder, octdec(wtw_chmod));
-					}
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
+					$wtwhandlers->verifyFolderExists($znewobjectfolder);
 					$znewobjecturl = $znewurl.'/objects/'.str_replace(".obj","",str_replace(".gltf","",str_replace(".glb","",str_replace(".babylon","",$zuploadobject->objectfile))))."/";
 					
 					/* get new foreign keys */
@@ -5260,17 +5363,7 @@ class wtw_3dinternet_downloads {
 				/* determine the new local path for uploaded files associated with this download */
 				$znewfolder = $wtwhandlers->contentpath.'/uploads/avatars/'.$znewwebid;
 				$znewurl = $wtwhandlers->contenturl.'/uploads/avatars/'.$znewwebid;
-				if (!file_exists($znewfolder)) {
-					umask(0);
-					mkdir($znewfolder, octdec(wtw_chmod), true);
-					chmod($znewfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewfolder);
 				
 				/* write main avatar record */
 				$zobjectfolder = "/content/uploads/avatars/".$znewwebid."/";
@@ -5382,17 +5475,7 @@ class wtw_3dinternet_downloads {
 				/* determine the new local path for uploaded files associated with this download */
 				$znewfolder = $wtwhandlers->contentpath.'/uploads/avatars/'.$znewwebid;
 				$znewurl = $wtwhandlers->contenturl.'/uploads/avatars/'.$znewwebid;
-				if (!file_exists($znewfolder)) {
-					umask(0);
-					mkdir($znewfolder, octdec(wtw_chmod), true);
-					chmod($znewfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewfolder);
 				
 				/* write main avatar record */
 				$zobjectfolder = "/content/uploads/avatars/".$znewwebid."/";
@@ -5584,17 +5667,7 @@ class wtw_3dinternet_downloads {
 			foreach ($zrequestfiles as $zfile) {
 				if (strpos($zfile->file,'/') !== false) {
 					list($zfolder, $zfilename) = explode('/', $zfile->file);
-					if (!file_exists(wtw_rootpath.$zobjectfolder.$zfolder)) {
-						umask(0);
-						mkdir(wtw_rootpath.$zobjectfolder.$zfolder, octdec(wtw_chmod), true);
-						chmod(wtw_rootpath.$zobjectfolder.$zfolder, octdec(wtw_chmod));
-						if (defined('wtw_umask')) {
-							/* reset umask */
-							if (wtw_umask != '0') {
-								umask(octdec(wtw_umask));
-							}
-						}
-					}
+					$wtwhandlers->verifyFolderExists(wtw_rootpath.$zobjectfolder.$zfolder);
 					$wtwhandlers->getFilefromURL('https://3dnet.walktheweb.com/content/uploads/avatars/'.$zwebid.'/'.$zfolder.'/'.$zfilename, wtw_rootpath.$zobjectfolder.$zfolder.'/', $zfilename);
 				} else {
 					$wtwhandlers->getFilefromURL('https://3dnet.walktheweb.com/content/uploads/avatars/'.$zwebid.'/'.$zfile->file, wtw_rootpath.$zobjectfolder, $zfile->file);
@@ -5909,17 +5982,7 @@ class wtw_3dinternet_downloads {
 				/* determine the new local path for uploaded files associated with this download */
 				$znewfolder = $wtwhandlers->contentpath.'/uploads/avatars/'.$zwebid;
 				$znewurl = $wtwhandlers->contenturl.'/uploads/avatars/'.$zwebid;
-				if (!file_exists($znewfolder)) {
-					umask(0);
-					mkdir($znewfolder, octdec(wtw_chmod), true);
-					chmod($znewfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewfolder);
 				
 				/* process all users associated to this download (for your reference) */
 				foreach ($zrequest->users as $zuser) {
@@ -6093,17 +6156,7 @@ class wtw_3dinternet_downloads {
 				foreach ($zrequest->files as $zfile) {
 					if (strpos($zfile->file,'/') !== false) {
 						list($zfolder, $zfilename) = explode('/', $zfile->file);
-						if (!file_exists(wtw_rootpath.$zobjectfolder.$zfolder)) {
-							umask(0);
-							mkdir(wtw_rootpath.$zobjectfolder.$zfolder, octdec(wtw_chmod), true);
-							chmod(wtw_rootpath.$zobjectfolder.$zfolder, octdec(wtw_chmod));
-							if (defined('wtw_umask')) {
-								/* reset umask */
-								if (wtw_umask != '0') {
-									umask(octdec(wtw_umask));
-								}
-							}
-						}
+						$wtwhandlers->verifyFolderExists(wtw_rootpath.$zobjectfolder.$zfolder);
 						$wtwhandlers->getFilefromURL('https://3dnet.walktheweb.com/content/uploads/avatars/'.$zupdatewebid.'/'.$zfolder.'/'.$zfilename, wtw_rootpath.$zobjectfolder.$zfolder.'/', $zfilename);
 					} else {
 						$wtwhandlers->getFilefromURL('https://3dnet.walktheweb.com/content/uploads/avatars/'.$zupdatewebid.'/'.$zfile->file, wtw_rootpath.$zobjectfolder, $zfile->file);
@@ -6441,17 +6494,7 @@ class wtw_3dinternet_downloads {
 				/* determine the new local path for uploaded files associated with this download */
 				$znewfolder = $wtwhandlers->contentpath.'/uploads/useravatars/'.$zuseravatarid;
 				$znewurl = $wtwhandlers->contenturl.'/uploads/useravatars/'.$zuseravatarid;
-				if (!file_exists($znewfolder)) {
-					umask(0);
-					mkdir($znewfolder, octdec(wtw_chmod), true);
-					chmod($znewfolder, octdec(wtw_chmod));
-					if (defined('wtw_umask')) {
-						/* reset umask */
-						if (wtw_umask != '0') {
-							umask(octdec(wtw_umask));
-						}
-					}
-				}
+				$wtwhandlers->verifyFolderExists($znewfolder);
 				
 				/* process all users associated to this download (for your reference) */
 				foreach ($zrequest->users as $zuser) {
@@ -6541,17 +6584,7 @@ class wtw_3dinternet_downloads {
 				foreach ($zrequest->files as $zfile) {
 					if (strpos($zfile->file,'/') !== false) {
 						list($zfolder, $zfilename) = explode('/', $zfile->file);
-						if (!file_exists(wtw_rootpath.$zobjectfolder.$zfolder)) {
-							umask(0);
-							mkdir(wtw_rootpath.$zobjectfolder.$zfolder, octdec(wtw_chmod), true);
-							chmod(wtw_rootpath.$zobjectfolder.$zfolder, octdec(wtw_chmod));
-							if (defined('wtw_umask')) {
-								/* reset umask */
-								if (wtw_umask != '0') {
-									umask(octdec(wtw_umask));
-								}
-							}
-						}
+						$wtwhandlers->verifyFolderExists(wtw_rootpath.$zobjectfolder.$zfolder);
 						$wtwhandlers->getFilefromURL('https://3dnet.walktheweb.com/content/uploads/avatars/'.$zupdatewebid.'/'.$zfolder.'/'.$zfilename, wtw_rootpath.$zobjectfolder.$zfolder.'/', $zfilename);
 					} else {
 						$wtwhandlers->getFilefromURL('https://3dnet.walktheweb.com/content/uploads/avatars/'.$zupdatewebid.'/'.$zfile->file, wtw_rootpath.$zobjectfolder, $zfile->file);

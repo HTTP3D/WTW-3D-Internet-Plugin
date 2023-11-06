@@ -312,7 +312,6 @@ class wtw_3dinternet_templates {
 					$zuserid = $_SESSION["wtw_userid"];
 				}
 				$zfromurl = "https://3dnet.walktheweb.com/connect/share.php?buildingid=".$zbuildingid."&userid=".$zuserid."&sharehash=".$zsharehash."&domainurl=".$wtwhandlers->domainurl;
-
 				$zresponse = $wtwhandlers->openFilefromURL($zfromurl);
 				$zresponse = json_decode($zresponse, true);
 			}
@@ -434,10 +433,6 @@ class wtw_3dinternet_templates {
 				if ($wtwhandlers->hasValue($_SESSION["wtw_userid"])) {
 					$zuserid = $_SESSION["wtw_userid"];
 				}
-				$ztemplatename = $wtwhandlers->decode($ztemplatename);
-				$zdescription = $wtwhandlers->decode($zdescription);
-				$ztags = $wtwhandlers->decode($ztags);
-				$zversiondesc = $wtwhandlers->decode($zversiondesc);
 					
 				$ztemplatename = $wtwhandlers->escapeHTML($ztemplatename);
 				$zdescription = $wtwhandlers->escapeHTML($zdescription);
